@@ -1,0 +1,1759 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Penghasilan YouTube — Revenue & AdSense</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #EFEFEF;
+      color: #0C0C0C;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Bingkai utama putih bersih ala referensi */
+    .editorial-shell {
+      background-color: #FFFFFF;
+      box-shadow: 0 28px 75px rgba(12, 12, 12, 0.07);
+    }
+
+    /* Rel navigasi hitam pekat dengan bayangan halus */
+    .black-rail {
+      background-color: #0C0C0C;
+      box-shadow: 0 18px 40px rgba(12, 12, 12, 0.22);
+    }
+
+    /* Kartu abu-abu lembut (#F5F6F8) ala referensi */
+    .soft-card {
+      background-color: #F5F6F8;
+    }
+
+    /* Floating pill label pada titik grafik */
+    .chart-pill-shadow {
+      filter: drop-shadow(0 4px 8px rgba(12, 12, 12, 0.12));
+    }
+
+    /* Scrollbar minimalis */
+    .slim-scroll::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .slim-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .slim-scroll::-webkit-scrollbar-thumb {
+      background: #D4D6DC;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-2.5 sm:p-5 lg:p-8 flex items-start justify-center">
+
+  <!-- Toast Notification -->
+  <div id="toastBox" class="fixed bottom-5 right-5 z-50 hidden items-center gap-2.5 px-4 py-3 rounded-2xl bg-[#0C0C0C] text-white text-xs font-medium shadow-2xl">
+    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+    <span id="toastText">Berhasil diperbarui</span>
+  </div>
+
+  <!-- Modal Input Pendapatan Harian -->
+  <div id="addModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/45 backdrop-blur-xs p-4">
+    <div class="w-full max-w-md rounded-[24px] bg-white border border-[#E5E7EB] shadow-2xl p-6">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-[#8C8F96]">Sheet: Revenue • Data Youtube</span>
+          <h3 class="text-lg font-extrabold text-[#0C0C0C]">Input Pendapatan Harian</h3>
+        </div>
+        <button id="closeModalBtn" class="w-9 h-9 rounded-full bg-[#F5F6F8] hover:bg-[#E5E7EB] flex items-center justify-center transition">
+          <svg class="w-4 h-4 text-[#0C0C0C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form id="addForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-[#374151] mb-1.5">Tanggal</label>
+          <input type="text" id="inputTanggal" value="16-Nov-2026" required class="w-full px-4 py-2.5 rounded-xl bg-[#F5F6F8] border border-transparent focus:border-[#0C0C0C] focus:bg-white text-sm font-medium focus:outline-none transition" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-[#374151] mb-1.5">Pinkymon (USD)</label>
+            <input type="number" step="0.01" min="0" id="inputPinkymon" placeholder="2.10" required class="w-full px-4 py-2.5 rounded-xl bg-[#F5F6F8] border border-transparent focus:border-[#0C0C0C] focus:bg-white text-sm font-medium focus:outline-none transition" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#374151] mb-1.5">Ceria Space (USD)</label>
+            <input type="number" step="0.01" min="0" id="inputCeria" placeholder="2.45" required class="w-full px-4 py-2.5 rounded-xl bg-[#F5F6F8] border border-transparent focus:border-[#0C0C0C] focus:bg-white text-sm font-medium focus:outline-none transition" />
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button type="button" id="cancelModalBtn" class="px-4 py-2.5 rounded-xl text-xs font-semibold text-[#6B7280] hover:bg-[#F5F6F8] transition">Batal</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#0C0C0C] hover:bg-neutral-800 text-white text-xs font-semibold transition">Simpan Data</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Pengaturan Auto-Sync Google Sheets -->
+  <div id="syncHelpModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/45 backdrop-blur-xs p-4">
+    <div class="w-full max-w-md rounded-[24px] bg-white border border-[#E5E7EB] shadow-2xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-[#8C8F96]">Live Spreadsheet Sync</span>
+          <h3 class="text-lg font-extrabold text-[#0C0C0C]">Auto-Sync Google Sheets</h3>
+        </div>
+        <button id="closeSyncHelpBtn" class="w-9 h-9 rounded-full bg-[#F5F6F8] hover:bg-[#E5E7EB] flex items-center justify-center transition">
+          <svg class="w-4 h-4 text-[#0C0C0C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-[#F5F6F8] text-xs text-[#1F2937] space-y-1.5 mb-3.5">
+        <div class="font-bold text-[#0C0C0C]" id="syncDetailTitle">Status: Menghubungkan ke Google Sheets...</div>
+        <p id="syncDetailDesc" class="text-[#6B7280] leading-relaxed">
+          Dashboard otomatis mengambil data terbaru dari tab <strong>Revenue</strong> setiap beberapa menit sekali.
+        </p>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-[#F5F6F8] text-xs space-y-2 mb-4">
+        <div class="flex items-center justify-between">
+          <span class="font-semibold text-[#0C0C0C]">Interval Pembaruan</span>
+          <select id="autoSyncIntervalSelect" class="px-3 py-1.5 rounded-xl bg-white border border-[#E5E7EB] text-xs font-bold text-[#0C0C0C] focus:outline-none cursor-pointer">
+            <option value="60000">Setiap 1 Menit</option>
+            <option value="120000" selected>Setiap 2 Menit</option>
+            <option value="300000">Setiap 5 Menit</option>
+            <option value="0">Manual Saja</option>
+          </select>
+        </div>
+        <p class="text-[11px] text-[#6B7280] leading-relaxed">
+          Pastikan akses berbagi spreadsheet <strong>Data Youtube</strong> diset ke <em>"Siapa saja yang memiliki link (Pelihat)"</em> agar pembaruan berjalan otomatis.
+        </p>
+      </div>
+
+      <div class="flex items-center justify-between gap-2">
+        <button id="forceSyncFromModalBtn" class="flex-1 py-2.5 px-4 rounded-xl bg-[#0C0C0C] hover:bg-neutral-800 text-white text-xs font-semibold transition">
+          Ambil Data Sekarang
+        </button>
+        <button id="dismissSyncModalBtn" class="py-2.5 px-4 rounded-xl bg-[#F5F6F8] hover:bg-[#E5E7EB] text-[#0C0C0C] text-xs font-semibold transition">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- MAIN EDITORIAL SHELL (CLEAN WHITE CANVAS + BLACK ICON RAIL)             -->
+  <!-- ======================================================================= -->
+  <div class="w-full max-w-[1320px] rounded-[28px] editorial-shell p-3.5 sm:p-6 lg:p-7 flex flex-col lg:flex-row gap-5 lg:gap-8">
+
+    <!-- ===================================================================== -->
+    <!-- 1. LEFT VERTICAL BLACK ICON RAIL (ALA REFERENSI "F.")                 -->
+    <!-- ===================================================================== -->
+    <nav class="order-0 w-full lg:w-[68px] rounded-[22px] black-rail text-white px-4 py-3 lg:py-6 flex lg:flex-col items-center justify-between shrink-0">
+      <!-- Top Brand Monogram "Y." -->
+      <div class="text-2xl font-black tracking-tighter text-white select-none lg:mb-6">
+        Y<span class="text-white">.</span>
+      </div>
+
+      <!-- Navigation Icons -->
+      <div class="flex lg:flex-col items-center gap-2 sm:gap-3 lg:gap-5">
+        <button data-nav="overview" title="Overview Dashboard" class="rail-nav-btn w-10 h-10 rounded-xl bg-white/15 text-white flex items-center justify-center transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        </button>
+
+        <button data-nav="daily" title="Daily Revenue" class="rail-nav-btn w-10 h-10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 flex items-center justify-center transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        </button>
+
+        <button data-nav="adsense" title="Kalender Google AdSense" class="rail-nav-btn w-10 h-10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 flex items-center justify-center transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        </button>
+
+        <button data-nav="schedule" title="Cek Jadwal Video (Cer** Spa** & Pin*y**on)" class="rail-nav-btn relative w-10 h-10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 flex items-center justify-center transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          <span id="railScheduleAlertDot" class="absolute top-1.5 right-1.5 min-w-[15px] h-[15px] px-1 rounded-full bg-[#EF4444] text-white text-[9px] font-extrabold flex items-center justify-center">5</span>
+        </button>
+
+        <button id="railAddBtn" title="Input Pendapatan Harian" class="w-10 h-10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 flex items-center justify-center transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M12 4v16m8-8H4"/></svg>
+        </button>
+
+        <button id="railSyncSettingsBtn" title="Pengaturan Auto-Sync Sheet" class="w-10 h-10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 flex items-center justify-center transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+
+      <!-- Bottom Refresh / Sync Icon -->
+      <button id="railRefreshBtn" title="Sinkron Ulang Google Sheets" class="w-10 h-10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 flex items-center justify-center transition">
+        <svg id="railRefreshIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M4 4v5h5M20 20v-5h-5M4.93 9a8 8 0 0113.8-2.36L20 9m-.93 6a8 8 0 01-13.8 2.36L4 15"/></svg>
+      </button>
+    </nav>
+
+    <!-- ===================================================================== -->
+    <!-- SLIDE 1: MAIN REVENUE & ADSENSE DASHBOARD VIEW                        -->
+    <!-- ===================================================================== -->
+    <div id="mainDashboardSlide" class="contents lg:flex lg:flex-1 lg:gap-8 lg:min-w-0">
+
+    <!-- ===================================================================== -->
+    <!-- 2. CENTER-LEFT COLUMN: HERO BANNER + LATEST DAY STRIP + ADSENSE CAL   -->
+    <!-- ===================================================================== -->
+    <div id="leftColumnSection" class="contents lg:flex lg:w-[54%] lg:flex-col lg:justify-between lg:space-y-5 lg:min-w-0">
+
+      <!-- HERO GREETING BANNER ("Hello Dani!" + Monochrome Line-Art Character) -->
+      <div class="order-1 lg:order-none relative rounded-[20px] soft-card px-6 py-6 sm:py-7 flex items-center justify-between overflow-visible mt-1">
+        <div class="pr-28 sm:pr-40">
+          <h1 class="text-2xl sm:text-[32px] font-extrabold tracking-tight text-[#0C0C0C] leading-tight">
+            Hello Dani!
+          </h1>
+          <p class="text-xs sm:text-[13px] font-medium text-[#4B5563] mt-1.5">
+            Senang melihat progres Pinkymon & Ceria Space hari ini.
+          </p>
+        </div>
+
+        <!-- Custom Monochrome Line-Art Male Creator Illustration -->
+        <div class="pointer-events-none absolute right-3 sm:right-6 bottom-0 w-32 sm:w-40 h-36 sm:h-44 flex items-end justify-end">
+          <svg viewBox="0 0 180 185" class="w-full h-full overflow-visible" fill="none">
+            <!-- Waving Hand & Arm -->
+            <path d="M52 145 C42 128, 34 112, 28 96" stroke="#0C0C0C" stroke-width="2.4" stroke-linecap="round"/>
+            <path d="M28 96 C22 86, 17 75, 20 73 C23 71, 27 81, 31 88" stroke="#0C0C0C" stroke-width="2" stroke-linecap="round" fill="#FFFFFF"/>
+            <path d="M31 88 C28 76, 26 65, 30 64 C33 63, 35 75, 37 85" stroke="#0C0C0C" stroke-width="2" stroke-linecap="round" fill="#FFFFFF"/>
+            <path d="M37 85 C37 73, 38 63, 42 63 C45 63, 44 75, 43 86" stroke="#0C0C0C" stroke-width="2" stroke-linecap="round" fill="#FFFFFF"/>
+            <path d="M43 86 C46 77, 49 69, 52 70 C55 71, 51 82, 48 92" stroke="#0C0C0C" stroke-width="2" stroke-linecap="round" fill="#FFFFFF"/>
+            <path d="M48 92 C54 87, 60 85, 61 88 C62 91, 54 98, 46 104" stroke="#0C0C0C" stroke-width="2" stroke-linecap="round" fill="#FFFFFF"/>
+            <!-- Wave Motion Lines -->
+            <path d="M14 78 C11 84, 11 91, 14 97" stroke="#0C0C0C" stroke-width="1.6" stroke-linecap="round"/>
+            <path d="M9 82 C7 86, 7 90, 9 94" stroke="#0C0C0C" stroke-width="1.5" stroke-linecap="round"/>
+
+            <!-- Black Crewneck Torso -->
+            <path d="M54 185 C56 152, 72 136, 102 136 C132 136, 146 152, 148 185 Z" fill="#0C0C0C"/>
+            <!-- Neck -->
+            <rect x="93" y="114" width="18" height="26" rx="6" fill="#FFFFFF" stroke="#0C0C0C" stroke-width="2.2"/>
+            <!-- Ears -->
+            <circle cx="77" cy="84" r="6.5" fill="#FFFFFF" stroke="#0C0C0C" stroke-width="2.2"/>
+            <circle cx="127" cy="84" r="6.5" fill="#FFFFFF" stroke="#0C0C0C" stroke-width="2.2"/>
+            <!-- Face -->
+            <rect x="79" y="52" width="46" height="64" rx="23" fill="#FFFFFF" stroke="#0C0C0C" stroke-width="2.4"/>
+            <!-- Stylish Hair -->
+            <path d="M77 74 C74 52, 82 32, 104 32 C124 32, 132 48, 127 74 C124 58, 116 53, 102 54 C88 55, 81 60, 77 74 Z" fill="#0C0C0C"/>
+            <path d="M88 34 C94 24, 112 23, 119 34" stroke="#0C0C0C" stroke-width="6" stroke-linecap="round"/>
+            <!-- Glasses -->
+            <circle cx="92" cy="81" r="9.5" fill="#FFFFFF" stroke="#0C0C0C" stroke-width="2.2"/>
+            <circle cx="114" cy="81" r="9.5" fill="#FFFFFF" stroke="#0C0C0C" stroke-width="2.2"/>
+            <line x1="101.5" y1="81" x2="104.5" y2="81" stroke="#0C0C0C" stroke-width="2.2"/>
+            <!-- Eyes & Smile -->
+            <circle cx="92" cy="81" r="2.2" fill="#0C0C0C"/>
+            <circle cx="114" cy="81" r="2.2" fill="#0C0C0C"/>
+            <path d="M102 85 L100 94 L104 94" stroke="#0C0C0C" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M95 101 Q102 107 109 101" stroke="#0C0C0C" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+
+      <!-- LATEST DAY HIGHLIGHT STRIP (HANYA 1 DATA HARI TERAKHIR + TOTAL PILL) + STEPPER (< >) -->
+      <div class="order-2 lg:order-none flex items-center gap-2.5">
+        <div class="flex-1 rounded-[18px] soft-card px-4 py-3 flex items-center justify-between gap-3 min-w-0">
+          <div class="flex items-center gap-3 min-w-0">
+            <!-- Day Number Circle -->
+            <div id="stripEmblem" class="w-10 h-10 rounded-full bg-white flex items-center justify-center shrink-0 shadow-2xs border border-[#E5E7EB]">
+              <span class="text-xs font-black text-[#0C0C0C]" id="stripDayBadge">15</span>
+            </div>
+            <div class="min-w-0">
+              <div id="stripTitle" class="text-xs sm:text-sm font-extrabold text-[#0C0C0C] truncate">
+                15-Nov-2026
+              </div>
+              <div id="stripSubtitle" class="text-[11px] font-medium text-[#6B7280] truncate">
+                PK $1,88 • CS $2,19
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2.5 shrink-0">
+            <!-- Circular Progress Ring (Target $100 AdSense) -->
+            <div class="relative w-10 h-10 flex items-center justify-center" title="Progres Menuju Minimum $100 Google AdSense">
+              <svg class="w-10 h-10 -rotate-90" viewBox="0 0 36 36">
+                <circle cx="18" cy="18" r="14" fill="none" stroke="#E5E7EB" stroke-width="2.6" />
+                <circle
+                  id="adsenseRingCircle"
+                  cx="18"
+                  cy="18"
+                  r="14"
+                  fill="none"
+                  stroke="#0C0C0C"
+                  stroke-width="2.6"
+                  stroke-linecap="round"
+                  stroke-dasharray="87.96"
+                  stroke-dashoffset="32"
+                />
+              </svg>
+              <span id="adsenseRingText" class="absolute text-[9px] font-extrabold text-[#0C0C0C]">63%</span>
+            </div>
+
+            <!-- Black Pill Total Hari Terakhir (Pengganti Tombol Input) -->
+            <div id="stripTotalPill" class="px-3.5 py-2 rounded-full bg-[#0C0C0C] text-white text-xs font-bold shrink-0">
+              $4,07
+            </div>
+          </div>
+        </div>
+
+        <!-- Circular Prev / Next Date Buttons -->
+        <div class="flex items-center gap-1.5 shrink-0">
+          <button id="prevDayStepBtn" title="Hari Sebelumnya" class="w-9 h-9 rounded-full border border-[#D1D5DB] hover:border-[#0C0C0C] bg-white text-[#0C0C0C] flex items-center justify-center transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <button id="nextDayStepBtn" title="Hari Berikutnya" class="w-9 h-9 rounded-full border border-[#D1D5DB] hover:border-[#0C0C0C] bg-white text-[#0C0C0C] flex items-center justify-center transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- KALENDER GOOGLE ADSENSE & SIKLUS PEMBAYARAN                         -->
+      <!-- =================================================================== -->
+      <div id="adsenseCalendarCard" class="order-7 lg:order-none rounded-[20px] soft-card p-4 sm:p-5 relative overflow-hidden">
+        <div class="flex items-center justify-between gap-2 mb-3">
+          <div>
+            <div class="flex items-center gap-2">
+              <h3 class="text-sm sm:text-base font-extrabold text-[#0C0C0C]">Kalender Google AdSense</h3>
+              <span id="adsenseStatusBadge" class="px-2 py-0.5 rounded-md bg-[#0C0C0C] text-white text-[10px] font-bold">
+                Min. $100
+              </span>
+            </div>
+            <p id="adsenseStageDesc" class="text-[11px] font-medium text-[#4B5563] mt-0.5">
+              Klik tanggal 3, 20, atau 21–26 untuk detail siklus pencairan.
+            </p>
+          </div>
+
+          <!-- Month Navigation -->
+          <div class="flex items-center gap-1 shrink-0">
+            <button id="prevCalBtn" class="w-7 h-7 rounded-lg bg-white hover:bg-[#E5E7EB] flex items-center justify-center text-[#0C0C0C] text-xs font-bold transition">‹</button>
+            <span id="calMonthTitle" class="px-2.5 py-1 rounded-lg bg-white text-[11px] font-extrabold text-[#0C0C0C]">Nov 2026</span>
+            <button id="nextCalBtn" class="w-7 h-7 rounded-lg bg-white hover:bg-[#E5E7EB] flex items-center justify-center text-[#0C0C0C] text-xs font-bold transition">›</button>
+          </div>
+        </div>
+
+        <!-- Compact 7-Column Calendar Grid -->
+        <div class="grid grid-cols-7 text-center text-[10px] font-bold text-[#9CA3AF] mb-1">
+          <span>SEN</span><span>SEL</span><span>RAB</span><span>KAM</span><span>JUM</span><span>SAB</span><span>MIN</span>
+        </div>
+        <div id="adsenseCalendarGrid" class="grid grid-cols-7 gap-1 text-center text-[11px]">
+          <!-- Diisi dinamis oleh JS -->
+        </div>
+
+        <!-- 3 Milestone Pills + Action Button (Tanggal 3, Tanggal 20, Tanggal 21-26) -->
+        <div class="mt-3 pt-3 border-t border-[#E5E7EB] flex flex-wrap items-center justify-between gap-2">
+          <div class="flex flex-wrap items-center gap-1.5 text-[10px] font-bold">
+            <button data-adsense-jump="3" class="adsense-pill-btn px-2.5 py-1 rounded-lg bg-white border border-[#D1D5DB] hover:border-[#0C0C0C] text-[#0C0C0C] transition">
+              Tgl 3: Finalisasi
+            </button>
+            <button data-adsense-jump="20" class="adsense-pill-btn px-2.5 py-1 rounded-lg bg-white border border-[#D1D5DB] hover:border-[#0C0C0C] text-[#0C0C0C] transition">
+              Tgl 20: Cek $100
+            </button>
+            <button data-adsense-jump="21" class="adsense-pill-btn px-2.5 py-1 rounded-lg bg-[#0C0C0C] text-white transition">
+              Tgl 21–26: Cair
+            </button>
+          </div>
+
+          <button id="copyReportBtn" class="px-3 py-1.5 rounded-lg bg-[#0C0C0C] hover:bg-neutral-800 text-white text-[11px] font-semibold transition">
+            Salin Laporan
+          </button>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- 3. RIGHT COLUMN: SEARCH + 2 BIG STAT BOXES + WAVE CHART + DAILY REV   -->
+    <!-- ===================================================================== -->
+    <div class="contents lg:flex lg:flex-1 lg:flex-col lg:justify-between lg:space-y-5 lg:min-w-0">
+
+      <!-- TOP SEARCH & UTILITY ROW -->
+      <div class="order-3 lg:order-none flex items-center gap-3">
+        <!-- Search Input Box -->
+        <div class="relative flex-1">
+          <svg class="w-4 h-4 text-[#0C0C0C] absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/></svg>
+          <input
+            type="text"
+            id="searchInput"
+            placeholder="Cari tanggal atau nominal..."
+            class="w-full pl-10 pr-4 py-2.5 rounded-xl soft-card text-xs font-medium text-[#0C0C0C] placeholder-[#9CA3AF] focus:outline-none focus:ring-1 focus:ring-[#0C0C0C]"
+          />
+        </div>
+
+        <!-- Bell / Sync Status Button with Red Badge -->
+        <button id="syncBellBtn" title="Status Auto-Sync Google Sheets" class="relative w-10 h-10 rounded-xl hover:bg-[#F5F6F8] flex items-center justify-center transition shrink-0">
+          <svg class="w-5 h-5 text-[#0C0C0C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+          <span id="syncRedBadge" class="absolute top-1.5 right-1.5 min-w-[16px] h-4 px-1 rounded-full bg-[#EF4444] text-white text-[9px] font-extrabold flex items-center justify-center">
+            15
+          </span>
+        </button>
+
+        <!-- Currency Switcher Avatar Pill ($ / Rp) -->
+        <button id="currencyToggleBtn" title="Ganti Mata Uang USD / IDR" class="flex items-center gap-1.5 pl-1 pr-2 py-1 rounded-full hover:bg-[#F5F6F8] transition shrink-0">
+          <div class="w-8 h-8 rounded-full bg-[#0C0C0C] text-white text-xs font-extrabold flex items-center justify-center">
+            <span id="currencyAvatarBadge">$</span>
+          </div>
+          <svg class="w-3.5 h-3.5 text-[#6B7280]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/></svg>
+        </button>
+      </div>
+
+      <!-- 2 LARGE BOLD METRIC BOXES -->
+      <div class="order-4 lg:order-none grid grid-cols-2 gap-3.5">
+        <div class="rounded-[18px] soft-card px-4 sm:px-5 py-4 flex items-center gap-3.5">
+          <div id="bigTotalMonth" class="text-2xl sm:text-[32px] font-black tracking-tight text-[#0C0C0C] leading-none">
+            $63,47
+          </div>
+          <div class="text-[11px] font-semibold text-[#4B5563] leading-snug">
+            Total<br/>Bulan ini
+          </div>
+        </div>
+
+        <div class="rounded-[18px] soft-card px-4 sm:px-5 py-4 flex items-center gap-3.5">
+          <div id="bigEstMonth" class="text-2xl sm:text-[32px] font-black tracking-tight text-[#0C0C0C] leading-none">
+            $126,94
+          </div>
+          <div class="text-[11px] font-semibold text-[#4B5563] leading-snug">
+            Estimasi<br/>Akhir bulan
+          </div>
+        </div>
+      </div>
+
+      <!-- YOUR STATISTICS SECTION (SMOOTH LINE CHART WITH FLOATING PILLS / CHANNEL SPLIT) -->
+      <div class="order-5 lg:order-none">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-lg font-extrabold text-[#0C0C0C]">Your statistics</h2>
+          <span id="liveSyncTinyTag" class="text-[10px] font-semibold text-[#6B7280]">Live • 2m</span>
+        </div>
+
+        <!-- Sub-tabs ("Tren Harian" vs "Per Channel") + Period Pill ("Nov 2026") -->
+        <div class="flex items-center justify-between gap-2 mb-3">
+          <div class="flex items-center gap-4 text-xs">
+            <button data-stat-tab="trend" class="stat-tab-btn font-bold text-[#0C0C0C] transition">
+              Tren Harian
+            </button>
+            <button data-stat-tab="channels" class="stat-tab-btn font-semibold text-[#9CA3AF] hover:text-[#0C0C0C] transition">
+              Per Channel
+            </button>
+          </div>
+
+          <button id="statPeriodPillBtn" class="px-3 py-1.5 rounded-xl soft-card hover:bg-[#E5E7EB] text-[11px] font-bold text-[#0C0C0C] flex items-center gap-1.5 transition">
+            <span id="statPeriodLabel">Nov 2026</span>
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.2" d="M19 9l-7 7-7-7"/></svg>
+          </button>
+        </div>
+
+        <!-- VIEW A: Smooth Black Wave Chart with Floating White Pill Callouts -->
+        <div id="trendChartContainer" class="w-full pt-1">
+          <svg id="editorialWaveSvg" class="w-full h-[185px] overflow-visible" viewBox="0 0 460 185" preserveAspectRatio="none"></svg>
+        </div>
+
+        <!-- VIEW B: Channel Breakdown (Pinkymon vs Ceria Space + Stok) -->
+        <div id="channelSplitContainer" class="hidden space-y-3 py-2">
+          <div class="rounded-2xl soft-card p-4 space-y-3">
+            <div>
+              <div class="flex items-center justify-between text-xs font-bold mb-1">
+                <span>Ceria Space</span>
+                <span id="csAmountLabel">$35,12 (55.3%)</span>
+              </div>
+              <div class="w-full h-2.5 rounded-full bg-[#E5E7EB] overflow-hidden">
+                <div id="csBarFill" class="h-full rounded-full bg-[#0C0C0C]" style="width: 55.3%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex items-center justify-between text-xs font-bold mb-1">
+                <span>Pinkymon</span>
+                <span id="pkAmountLabel">$28,35 (44.7%)</span>
+              </div>
+              <div class="w-full h-2.5 rounded-full bg-[#E5E7EB] overflow-hidden">
+                <div id="pkBarFill" class="h-full rounded-full bg-[#6B7280]" style="width: 44.7%"></div>
+              </div>
+            </div>
+            <div class="pt-2 border-t border-[#E5E7EB] flex items-center justify-between text-[11px] text-[#4B5563]">
+              <span id="stockInfoLeft">Pinkymon: V1-5 🔹 V2-8 (Stok 13)</span>
+              <span id="stockInfoRight">Ceria: V1-7 🔹 V2-12</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- DAILY REVENUE LIST SECTION (TEPAT SETELAH GRAFIK YOUR STATISTICS) -->
+      <div id="dailyRevenueSection" class="order-6 lg:order-none flex-1 flex flex-col min-h-0">
+        <div class="flex items-center justify-between mb-2">
+          <h2 class="text-lg font-extrabold text-[#0C0C0C]">Daily Revenue</h2>
+          <span id="dailyCountLabel" class="text-[11px] font-semibold text-[#6B7280]">15 hari tercatat</span>
+        </div>
+
+        <!-- Clean Editorial Underline Tabs -->
+        <div class="flex items-center gap-5 overflow-x-auto slim-scroll pb-2 mb-2.5 border-b border-[#F3F4F6] text-xs">
+          <button data-filter="all" class="tab-filter-btn font-bold text-[#0C0C0C] whitespace-nowrap transition">
+            Semua Hari
+          </button>
+          <button data-filter="pinkymon" class="tab-filter-btn font-semibold text-[#9CA3AF] hover:text-[#0C0C0C] whitespace-nowrap transition">
+            Pinkymon Unggul
+          </button>
+          <button data-filter="ceria" class="tab-filter-btn font-semibold text-[#9CA3AF] hover:text-[#0C0C0C] whitespace-nowrap transition">
+            Ceria Space Unggul
+          </button>
+          <button data-filter="peak" class="tab-filter-btn font-semibold text-[#9CA3AF] hover:text-[#0C0C0C] whitespace-nowrap transition">
+            Tertinggi (&gt;$4,30)
+          </button>
+        </div>
+
+        <!-- Scrollable List of Daily Cards (Automatically scrolls to the bottom/latest) -->
+        <div id="dailyListContainer" class="space-y-2.5 max-h-[340px] overflow-y-auto slim-scroll pr-1">
+          <!-- Diisi dinamis oleh JS -->
+        </div>
+      </div>
+
+    </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SLIDE 2: CEK VIDEO TERJADWAL (Cer** Spa** & Pin*y**on)                -->
+    <!-- ===================================================================== -->
+    <div id="scheduleSlideView" class="hidden flex-1 flex-col space-y-5 min-w-0">
+
+      <!-- TOP HEADER ROW: BACK TO DASHBOARD + SEARCH -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <button id="backToRevenueBtn" class="w-10 h-10 rounded-full border border-[#D1D5DB] hover:border-[#0C0C0C] bg-white text-[#0C0C0C] flex items-center justify-center transition shrink-0" title="Kembali ke Dashboard Revenue">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-[#0C0C0C]">Cek Jadwal Video</h1>
+              <span class="px-2.5 py-0.5 rounded-full bg-[#0C0C0C] text-white text-[10px] font-bold">Target 4 Video/Hari</span>
+            </div>
+            <p class="text-xs font-medium text-[#6B7280]">Audit otomatis slot video terjadwal & deteksi hari yang belum lengkap 4 konten.</p>
+          </div>
+        </div>
+
+        <!-- Search Input in Schedule Slide -->
+        <div class="relative w-full sm:w-64">
+          <svg class="w-4 h-4 text-[#0C0C0C] absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/></svg>
+          <input
+            type="text"
+            id="scheduleSearchInput"
+            placeholder="Cari hari, tanggal, judul..."
+            class="w-full pl-10 pr-4 py-2.5 rounded-xl soft-card text-xs font-medium text-[#0C0C0C] placeholder-[#9CA3AF] focus:outline-none focus:ring-1 focus:ring-[#0C0C0C]"
+          />
+        </div>
+      </div>
+
+      <!-- CHANNEL TABS SWITCHER ("Cer** Spa**" & "Pin*y**on") + COPY AUDIT BUTTON -->
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="inline-flex p-1.5 rounded-[18px] soft-card gap-1.5">
+          <button data-sched-channel="Cer** Spa**" class="sched-channel-tab px-4 py-2 rounded-xl bg-[#0C0C0C] text-white text-xs font-extrabold flex items-center gap-2 transition">
+            <span>Cer** Spa**</span>
+            <span id="badgeIncompleteCeria" class="px-1.5 py-0.5 rounded-full bg-[#EF4444] text-white text-[10px] font-black">3</span>
+          </button>
+          <button data-sched-channel="Pin*y**on" class="sched-channel-tab px-4 py-2 rounded-xl text-[#4B5563] hover:text-[#0C0C0C] text-xs font-bold flex items-center gap-2 transition">
+            <span>Pin*y**on</span>
+            <span id="badgeIncompletePinky" class="px-1.5 py-0.5 rounded-full bg-[#EF4444] text-white text-[10px] font-black">2</span>
+          </button>
+        </div>
+
+        <button id="copyScheduleAuditBtn" class="px-4 py-2.5 rounded-full bg-[#0C0C0C] hover:bg-neutral-800 text-white text-xs font-bold transition">
+          Salin Daftar Hari Kurang
+        </button>
+      </div>
+
+      <!-- 3 SUMMARY STAT CARDS FOR ACTIVE SCHEDULE TAB -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+        <div class="rounded-[18px] soft-card px-5 py-4 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] font-semibold text-[#6B7280]">Total Video Terjadwal</div>
+            <div id="schedTotalVideosStat" class="text-2xl sm:text-[28px] font-black text-[#0C0C0C] mt-0.5">41 Video</div>
+          </div>
+          <div id="schedSlotPatternTag" class="px-3 py-1.5 rounded-xl bg-white text-[10px] font-bold text-[#0C0C0C] border border-[#E5E7EB]">
+            4 Slot/Hari
+          </div>
+        </div>
+
+        <div class="rounded-[18px] soft-card px-5 py-4 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] font-semibold text-[#6B7280]">Hari Lengkap (4/4)</div>
+            <div id="schedCompleteDaysStat" class="text-2xl sm:text-[28px] font-black text-[#0C0C0C] mt-0.5">9 Hari</div>
+          </div>
+          <span class="px-3 py-1.5 rounded-full bg-white text-[11px] font-extrabold text-[#0C0C0C] border border-[#E5E7EB]">Aman</span>
+        </div>
+
+        <div class="rounded-[18px] bg-[#0C0C0C] text-white px-5 py-4 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] font-semibold text-white/70">Hari Belum Lengkap (&lt;4)</div>
+            <div id="schedIncompleteDaysStat" class="text-2xl sm:text-[28px] font-black text-white mt-0.5">3 Hari</div>
+          </div>
+          <span id="schedMissingVideosCountBadge" class="px-3 py-1.5 rounded-full bg-[#EF4444] text-white text-[11px] font-extrabold">
+            -7 Video
+          </span>
+        </div>
+      </div>
+
+      <!-- HIGHLIGHT ALERT BANNER: HARI YANG KONTENNYA TIDAK LENGKAP 4 VIDEO -->
+      <div id="incompleteAlertBox" class="rounded-[20px] soft-card border border-[#E5E7EB] p-4 sm:p-5">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#EF4444]"></span>
+            <h2 id="incompleteAlertHeading" class="text-sm sm:text-base font-extrabold text-[#0C0C0C]">
+              Hari Tidak Lengkap 4 Video — Cer** Spa**
+            </h2>
+          </div>
+          <span id="incompleteSlotRuleHint" class="text-[11px] font-semibold text-[#6B7280]">
+            Slot standar: 00:00, 04:00, 18:00, 22:00 WIB
+          </span>
+        </div>
+
+        <div id="incompleteDaysCardsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+          <!-- Diisi dinamis oleh JS -->
+        </div>
+      </div>
+
+      <!-- FILTER TABS & DAILY SCHEDULE SLOT BREAKDOWN -->
+      <div class="flex-1 flex flex-col min-h-0">
+        <div class="flex items-center justify-between gap-3 pb-2.5 mb-3 border-b border-[#F3F4F6]">
+          <div class="flex items-center gap-5 overflow-x-auto slim-scroll text-xs">
+            <button data-sched-filter="all" class="sched-filter-btn font-bold text-[#0C0C0C] whitespace-nowrap transition">
+              Semua Tanggal
+            </button>
+            <button data-sched-filter="incomplete" class="sched-filter-btn font-semibold text-[#9CA3AF] hover:text-[#0C0C0C] whitespace-nowrap transition">
+              Hanya Kurang (&lt;4 Video)
+            </button>
+            <button data-sched-filter="complete" class="sched-filter-btn font-semibold text-[#9CA3AF] hover:text-[#0C0C0C] whitespace-nowrap transition">
+              Sudah Lengkap (4/4)
+            </button>
+          </div>
+          <span id="schedRenderedDaysLabel" class="text-[11px] font-semibold text-[#6B7280] shrink-0">12 hari ditampilkan</span>
+        </div>
+
+        <div id="scheduleDailyCardsContainer" class="space-y-3 max-h-[460px] overflow-y-auto slim-scroll pr-1">
+          <!-- Diisi dinamis oleh JS -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. KONFIGURASI SPREADSHEET & DATA AWAL (DATA YOUTUBE — SHEET: REVENUE)
+    // =========================================================================
+    const SPREADSHEET_ID = '1Q-lgqDTrwDqDIF1y9OJg80KmJ_8TLh5EVIdjptVITGI';
+    const SHEET_NAME = 'Revenue';
+    const SCHEDULE_TABS = {
+      CERIA: 'Cer** Spa**',
+      PINKY: 'Pin*y**on'
+    };
+    const IDR_RATE = 16000;
+
+    // Data Jadwal Video Awal sesuai screenshot tab "Cer** Spa**" & "Pin*y**on"
+    const DEFAULT_SCHEDULE_DATA = {
+      'Cer** Spa**': [
+        { no: 1, hari: 'Kamis', tanggal: '19-11-2026', jam: '00:00 WIB', jenis: 'Shorts', judul: 'Barely slipping past the deadliest Nextbots...' },
+        { no: 2, hari: 'Kamis', tanggal: '19-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'Finn and Jake and Nextbots cornered me...' },
+        { no: 3, hari: 'Kamis', tanggal: '19-11-2026', jam: '18:00 WIB', jenis: 'Shorts', judul: 'One tiny hesitation and these Nextbots...' },
+        { no: 4, hari: 'Kamis', tanggal: '19-11-2026', jam: '22:00 WIB', jenis: 'Shorts', judul: 'Surviving 15 seconds against Finn and Jake...' },
+        { no: 5, hari: 'Jumat', tanggal: '20-11-2026', jam: '00:00 WIB', jenis: 'Shorts', judul: 'Maximum heart attack energy in this Nextbot run...' },
+        { no: 6, hari: 'Jumat', tanggal: '20-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'Finn and Jake joined the Nextbots to stop me...' },
+        { no: 7, hari: 'Jumat', tanggal: '20-11-2026', jam: '18:00 WIB', jenis: 'Shorts', judul: 'I forgot how to breathe during this Nextbot chase...' },
+        { no: 8, hari: 'Jumat', tanggal: '20-11-2026', jam: '22:00 WIB', jenis: 'Shorts', judul: 'Finn and Jake teamed up with Nextbots...' },
+        { no: 9, hari: 'Sabtu', tanggal: '21-11-2026', jam: '00:00 WIB', jenis: 'Shorts', judul: 'The most stressful 15-second Nextbot escape...' },
+        { no: 10, hari: 'Sabtu', tanggal: '21-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'I gasped for air escaping Finn and Jake...' },
+        { no: 11, hari: 'Sabtu', tanggal: '21-11-2026', jam: '18:00 WIB', jenis: 'Shorts', judul: 'My soul literally left my body during this...' },
+        { no: 12, hari: 'Sabtu', tanggal: '21-11-2026', jam: '22:00 WIB', jenis: 'Shorts', judul: 'Finn and Jake and 50 Nextbots chased me...' },
+        { no: 13, hari: 'Minggu', tanggal: '22-11-2026', jam: '00:00 WIB', jenis: 'Shorts', judul: 'Surviving 7 seconds against 100 max Nextbots...' },
+        { no: 14, hari: 'Minggu', tanggal: '22-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'Finn and Jake joined the Nextbot horde...' },
+        { no: 15, hari: 'Minggu', tanggal: '22-11-2026', jam: '18:00 WIB', jenis: 'Shorts', judul: 'I almost threw my mouse across the room...' },
+        { no: 16, hari: 'Minggu', tanggal: '22-11-2026', jam: '22:00 WIB', jenis: 'Shorts', judul: 'I almost lost my sanity fleeing Finn and Jake...' },
+        { no: 17, hari: 'Senin', tanggal: '23-11-2026', jam: '00:00 WIB', jenis: 'Shorts', judul: "The most brutal Nextbot jumpscare I've seen..." },
+        { no: 18, hari: 'Senin', tanggal: '23-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'Finn and Jake joined the Nextbots to trap me...' },
+        { no: 19, hari: 'Senin', tanggal: '23-11-2026', jam: '18:00 WIB', jenis: 'Shorts', judul: 'Zero warning before this Nextbot horde...' },
+        { no: 20, hari: 'Senin', tanggal: '23-11-2026', jam: '22:00 WIB', jenis: 'Shorts', judul: "Finn and Jake's Nextbot squad caught me..." },
+        { no: 21, hari: 'Selasa', tanggal: '24-11-2026', jam: '00:00 WIB', jenis: 'Shorts', judul: 'Nobody is surviving this insane Nextbot...' },
+        { no: 22, hari: 'Selasa', tanggal: '24-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'Squidward teamed up with Nextbots to...' },
+        { no: 23, hari: 'Selasa', tanggal: '24-11-2026', jam: '18:00 WIB', jenis: 'Shorts', judul: 'Pure unadulterated panic running from...' },
+        { no: 24, hari: 'Selasa', tanggal: '24-11-2026', jam: '22:00 WIB', jenis: 'Shorts', judul: 'Surviving 10 seconds against Squidward...' },
+        { no: 25, hari: 'Rabu', tanggal: '25-11-2026', jam: '00:00 WIB', jenis: 'Shorts', judul: 'My mic completely peaked from screaming...' },
+        { no: 26, hari: 'Rabu', tanggal: '25-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'Squidward joined the Nextbot horde to...' },
+        { no: 27, hari: 'Rabu', tanggal: '25-11-2026', jam: '18:00 WIB', jenis: 'Shorts', judul: 'My palms were sweating buckets during...' },
+        { no: 28, hari: 'Rabu', tanggal: '25-11-2026', jam: '22:00 WIB', jenis: 'Shorts', judul: "I barely outran Squidward's insane Nextbot..." },
+        { no: 29, hari: 'Kamis', tanggal: '26-11-2026', jam: '00:00 WIB', jenis: 'Shorts', judul: 'Barely dodging the fastest Nextbot swarm...' },
+        { no: 30, hari: 'Kamis', tanggal: '26-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'Squidward teamed up with Nextbots for...' },
+        { no: 31, hari: 'Kamis', tanggal: '26-11-2026', jam: '18:00 WIB', jenis: 'Shorts', judul: 'One split-second mistake and these Nextbots...' },
+        { no: 32, hari: 'Kamis', tanggal: '26-11-2026', jam: '22:00 WIB', jenis: 'Shorts', judul: 'Squidward and Nextbots cornered me...' },
+        { no: 33, hari: 'Jumat', tanggal: '27-11-2026', jam: '00:00 WIB', jenis: 'Shorts', judul: 'Peak nightmare fuel trying to outrun this...' },
+        { no: 34, hari: 'Jumat', tanggal: '27-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'Surviving 15 seconds against Squidward...' },
+        { no: 35, hari: 'Jumat', tanggal: '27-11-2026', jam: '18:00 WIB', jenis: 'Shorts', judul: 'I held my breath the entire time escaping...' },
+        { no: 36, hari: 'Jumat', tanggal: '27-11-2026', jam: '22:00 WIB', jenis: 'Shorts', judul: 'Squidward joined the Nextbots to stall...' },
+        { no: 37, hari: 'Sabtu', tanggal: '28-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'Squidward teamed up with Nextbots to...' },
+        { no: 38, hari: 'Sabtu', tanggal: '28-11-2026', jam: '22:00 WIB', jenis: 'Shorts', judul: "I gasped for air escaping Squidward's..." },
+        { no: 39, hari: 'Minggu', tanggal: '29-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'Squidward and 50 Nextbots chased me...' },
+        { no: 40, hari: 'Minggu', tanggal: '29-11-2026', jam: '22:00 WIB', jenis: 'Shorts', judul: 'Squidward joined the Nextbot horde for...' },
+        { no: 41, hari: 'Senin', tanggal: '30-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'I almost lost my sanity fleeing Squidward...' }
+      ],
+      'Pin*y**on': [
+        { no: 1, hari: 'Kamis', tanggal: '19-11-2026', jam: '04:30 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 2, hari: 'Kamis', tanggal: '19-11-2026', jam: '09:00 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 3, hari: 'Kamis', tanggal: '19-11-2026', jam: '13:00 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 4, hari: 'Kamis', tanggal: '19-11-2026', jam: '18:30 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 5, hari: 'Jumat', tanggal: '20-11-2026', jam: '04:30 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 6, hari: 'Jumat', tanggal: '20-11-2026', jam: '09:00 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 7, hari: 'Jumat', tanggal: '20-11-2026', jam: '13:00 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 8, hari: 'Jumat', tanggal: '20-11-2026', jam: '18:30 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 9, hari: 'Sabtu', tanggal: '21-11-2026', jam: '04:30 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 10, hari: 'Sabtu', tanggal: '21-11-2026', jam: '09:00 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 11, hari: 'Sabtu', tanggal: '21-11-2026', jam: '13:00 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 12, hari: 'Sabtu', tanggal: '21-11-2026', jam: '18:30 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 13, hari: 'Minggu', tanggal: '22-11-2026', jam: '04:30 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 14, hari: 'Minggu', tanggal: '22-11-2026', jam: '09:00 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 15, hari: 'Minggu', tanggal: '22-11-2026', jam: '13:00 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 16, hari: 'Minggu', tanggal: '22-11-2026', jam: '18:30 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 17, hari: 'Senin', tanggal: '23-11-2026', jam: '04:30 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 18, hari: 'Senin', tanggal: '23-11-2026', jam: '09:00 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 19, hari: 'Senin', tanggal: '23-11-2026', jam: '13:00 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 20, hari: 'Senin', tanggal: '23-11-2026', jam: '18:30 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 21, hari: 'Selasa', tanggal: '24-11-2026', jam: '04:30 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 22, hari: 'Selasa', tanggal: '24-11-2026', jam: '09:00 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 23, hari: 'Selasa', tanggal: '24-11-2026', jam: '13:00 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 24, hari: 'Selasa', tanggal: '24-11-2026', jam: '18:30 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 25, hari: 'Rabu', tanggal: '25-11-2026', jam: '04:30 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 26, hari: 'Rabu', tanggal: '25-11-2026', jam: '09:00 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 27, hari: 'Rabu', tanggal: '25-11-2026', jam: '13:00 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 28, hari: 'Rabu', tanggal: '25-11-2026', jam: '18:30 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 29, hari: 'Kamis', tanggal: '26-11-2026', jam: '04:30 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 30, hari: 'Kamis', tanggal: '26-11-2026', jam: '09:00 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 31, hari: 'Kamis', tanggal: '26-11-2026', jam: '13:00 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 32, hari: 'Kamis', tanggal: '26-11-2026', jam: '18:30 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 33, hari: 'Jumat', tanggal: '27-11-2026', jam: '04:30 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 34, hari: 'Jumat', tanggal: '27-11-2026', jam: '13:00 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 35, hari: 'Sabtu', tanggal: '28-11-2026', jam: '04:30 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' }
+      ]
+    };
+
+    const EXPECTED_SLOTS = {
+      'Cer** Spa**': ['00:00 WIB', '04:00 WIB', '18:00 WIB', '22:00 WIB'],
+      'Pin*y**on': ['04:30 WIB', '09:00 WIB', '13:00 WIB', '18:30 WIB']
+    };
+
+    let scheduleData = {
+      'Cer** Spa**': DEFAULT_SCHEDULE_DATA['Cer** Spa**'].map((item) => ({ ...item })),
+      'Pin*y**on': DEFAULT_SCHEDULE_DATA['Pin*y**on'].map((item) => ({ ...item }))
+    };
+
+    let activeSlide = 'revenue'; // 'revenue' | 'schedule'
+    let activeScheduleChannel = 'Cer** Spa**';
+    let activeScheduleFilter = 'all';
+    let scheduleSearchQuery = '';
+
+    // Data Revenue Awal (Tab "Revenue" — November 2026)
+    const DEFAULT_REVENUE_DATA = [
+      { tanggal: '1-Nov-2026', pinkymon: 2.41, ceria: 1.95, total: 4.35 },
+      { tanggal: '2-Nov-2026', pinkymon: 2.68, ceria: 2.21, total: 4.89 },
+      { tanggal: '3-Nov-2026', pinkymon: 1.51, ceria: 2.76, total: 4.27 },
+      { tanggal: '4-Nov-2026', pinkymon: 1.55, ceria: 2.99, total: 4.54 },
+      { tanggal: '5-Nov-2026', pinkymon: 1.44, ceria: 2.18, total: 3.63 },
+      { tanggal: '6-Nov-2026', pinkymon: 1.70, ceria: 2.69, total: 4.40 },
+      { tanggal: '7-Nov-2026', pinkymon: 1.61, ceria: 2.51, total: 4.12 },
+      { tanggal: '8-Nov-2026', pinkymon: 1.78, ceria: 2.31, total: 4.09 },
+      { tanggal: '9-Nov-2026', pinkymon: 1.95, ceria: 2.29, total: 4.24 },
+      { tanggal: '10-Nov-2026', pinkymon: 2.05, ceria: 2.09, total: 4.14 },
+      { tanggal: '11-Nov-2026', pinkymon: 1.95, ceria: 1.99, total: 3.93 },
+      { tanggal: '12-Nov-2026', pinkymon: 2.34, ceria: 1.86, total: 4.19 },
+      { tanggal: '13-Nov-2026', pinkymon: 1.58, ceria: 2.72, total: 4.30 },
+      { tanggal: '14-Nov-2026', pinkymon: 1.95, ceria: 2.39, total: 4.33 },
+      { tanggal: '15-Nov-2026', pinkymon: 1.88, ceria: 2.19, total: 4.07 }
+    ];
+
+    let revenueData = DEFAULT_REVENUE_DATA.map((item) => ({ ...item }));
+    let sheetSummary = {
+      rangeLabel: 'November',
+      estAkhirBulan: 126.94,
+      totalBulanIni: 63.47,
+      pkTotalSheet: 28.35,
+      csTotalSheet: 35.12,
+      stockPkBadge: 'V1-5 🔹 V2-8',
+      stockPkNote: 'Stok [13] Last Sabtu',
+      stockCsBadge: 'V1-7 🔹 V2-12'
+    };
+
+    let currencyMode = 'USD'; // 'USD' | 'IDR'
+    let selectedDayIndex = revenueData.length - 1;
+    let selectedCalendarDay = 19;
+    let calYear = 2026;
+    let calMonth = 10; // 0-indexed: 10 = November
+    let activeFilter = 'all';
+    let activeStatTab = 'trend';
+    let searchQuery = '';
+    let autoSyncMs = 120000;
+    let autoSyncTimerId = null;
+
+    // =========================================================================
+    // 2. HELPER FORMATTING & PARSING
+    // =========================================================================
+    function parseNumberId(raw) {
+      if (typeof raw === 'number') return isNaN(raw) ? 0 : raw;
+      if (!raw) return 0;
+      const cleaned = String(raw)
+        .replace(/[^0-9,.-]/g, '')
+        .replace(/\.(?=\d{3}(?:,|$))/g, '')
+        .replace(',', '.');
+      const val = parseFloat(cleaned);
+      return isNaN(val) ? 0 : val;
+    }
+
+    function formatMoney(usdAmount) {
+      const val = Number(usdAmount) || 0;
+      if (currencyMode === 'IDR') {
+        const idr = Math.round(val * IDR_RATE);
+        return 'Rp ' + idr.toLocaleString('id-ID');
+      }
+      return '$' + val.toFixed(2).replace('.', ',');
+    }
+
+    function parseDayNumber(tanggalStr) {
+      const match = String(tanggalStr || '').match(/^(\d{1,2})/);
+      return match ? parseInt(match[1], 10) : 1;
+    }
+
+    function showToast(msg) {
+      const box = document.getElementById('toastBox');
+      const txt = document.getElementById('toastText');
+      if (!box || !txt) return;
+      txt.textContent = msg;
+      box.classList.remove('hidden');
+      box.classList.add('flex');
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
+        box.classList.add('hidden');
+        box.classList.remove('flex');
+      }, 2800);
+    }
+
+    // =========================================================================
+    // 3. KALKULASI STATISTIK REVENUE & ADSENSE
+    // =========================================================================
+    function calculateStats() {
+      const sumPk = revenueData.reduce((acc, r) => acc + r.pinkymon, 0);
+      const sumCs = revenueData.reduce((acc, r) => acc + r.ceria, 0);
+      const sumTotal = revenueData.reduce((acc, r) => acc + r.total, 0);
+      const daysCount = revenueData.length || 1;
+      const avgDaily = sumTotal / daysCount;
+      const estAkhir = avgDaily * 30;
+      const totalChannel = sumPk + sumCs || 1;
+      const pkPct = (sumPk / totalChannel) * 100;
+      const csPct = (sumCs / totalChannel) * 100;
+      const adsensePct = Math.min(100, Math.round((sumTotal / 100) * 100));
+
+      return {
+        pkTotal: sumPk,
+        csTotal: sumCs,
+        totalBulan: sumTotal,
+        estAkhir,
+        avgDaily,
+        daysCount,
+        pkPct,
+        csPct,
+        adsensePct
+      };
+    }
+
+    // =========================================================================
+    // 4. RENDER DAILY REVENUE LIST (AUTO-SCROLL KE DATA PALING TERAKHIR)
+    // =========================================================================
+    function renderDailyList(autoScrollBottom = true) {
+      const container = document.getElementById('dailyListContainer');
+      const countLabel = document.getElementById('dailyCountLabel');
+      if (!container) return;
+
+      const q = searchQuery.trim().toLowerCase();
+      const filtered = revenueData
+        .map((item, idx) => ({ ...item, origIndex: idx }))
+        .filter((item) => {
+          if (activeFilter === 'pinkymon' && item.pinkymon <= item.ceria) return false;
+          if (activeFilter === 'ceria' && item.ceria <= item.pinkymon) return false;
+          if (activeFilter === 'peak' && item.total <= 4.30) return false;
+          if (!q) return true;
+          const hay = `${item.tanggal} ${formatMoney(item.total)} ${formatMoney(item.pinkymon)} ${formatMoney(item.ceria)}`.toLowerCase();
+          return hay.includes(q);
+        });
+
+      if (countLabel) {
+        countLabel.textContent = `${filtered.length} hari tercatat`;
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="rounded-2xl soft-card p-5 text-center text-xs text-[#6B7280]">
+            Tidak ada data harian yang sesuai dengan filter atau pencarian.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered
+        .map((item) => {
+          const isSelected = item.origIndex === selectedDayIndex;
+          const dayNum = parseDayNumber(item.tanggal);
+          return `
+            <div
+              data-day-idx="${item.origIndex}"
+              class="daily-row-card cursor-pointer rounded-[18px] soft-card px-4 py-3 flex items-center justify-between gap-3 transition ${
+                isSelected ? 'ring-1 ring-[#0C0C0C]' : 'hover:bg-[#ECEEF2]'
+              }"
+            >
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-9 h-9 rounded-xl bg-white flex items-center justify-center font-black text-xs text-[#0C0C0C] shrink-0 shadow-2xs">
+                  ${dayNum}
+                </div>
+                <div class="min-w-0">
+                  <div class="text-xs sm:text-sm font-extrabold text-[#0C0C0C] truncate">${item.tanggal}</div>
+                  <div class="text-[11px] font-medium text-[#6B7280] truncate">
+                    PK ${formatMoney(item.pinkymon)} • CS ${formatMoney(item.ceria)}
+                  </div>
+                </div>
+              </div>
+
+              <div class="px-3.5 py-1.5 rounded-full bg-[#0C0C0C] text-white text-xs font-bold shrink-0">
+                ${formatMoney(item.total)}
+              </div>
+            </div>
+          `;
+        })
+        .join('');
+
+      container.querySelectorAll('.daily-row-card').forEach((card) => {
+        card.addEventListener('click', () => {
+          selectedDayIndex = parseInt(card.getAttribute('data-day-idx'), 10);
+          selectedCalendarDay = parseDayNumber(revenueData[selectedDayIndex].tanggal);
+          renderDashboard(false);
+        });
+      });
+
+      if (autoScrollBottom) {
+        requestAnimationFrame(() => {
+          container.scrollTop = container.scrollHeight;
+        });
+      }
+    }
+
+    // =========================================================================
+    // 5. RENDER SMOOTH WAVE CHART WITH FLOATING PILL CALLOUTS
+    // =========================================================================
+    function renderEditorialWaveChart() {
+      const svg = document.getElementById('editorialWaveSvg');
+      if (!svg) return;
+
+      const slice = revenueData.slice(-7);
+      if (slice.length === 0) return;
+
+      const W = 460;
+      const H = 185;
+      const padLeft = 34;
+      const padRight = 24;
+      const padTop = 34;
+      const padBottom = 26;
+      const chartW = W - padLeft - padRight;
+      const chartH = H - padTop - padBottom;
+
+      const maxVal = Math.max(5, Math.ceil(Math.max(...slice.map((d) => d.total))));
+      const gridSteps = [0, 1, 2, 3, 4, 5];
+
+      let gridHtml = '';
+      gridSteps.forEach((step) => {
+        if (step > maxVal) return;
+        const y = padTop + chartH - (step / maxVal) * chartH;
+        const labelTxt = currencyMode === 'IDR' ? `${Math.round((step * IDR_RATE) / 1000)}k` : `$${step}`;
+        gridHtml += `
+          <line x1="${padLeft}" y1="${y.toFixed(1)}" x2="${W - padRight}" y2="${y.toFixed(1)}" stroke="#E5E7EB" stroke-width="1" />
+          <text x="${padLeft - 8}" y="${(y + 3).toFixed(1)}" text-anchor="end" fill="#9CA3AF" font-size="9" font-weight="600">${labelTxt}</text>
+        `;
+      });
+
+      const points = slice.map((item, i) => {
+        const x = slice.length === 1 ? padLeft + chartW / 2 : padLeft + (i / (slice.length - 1)) * chartW;
+        const y = padTop + chartH - (item.total / maxVal) * chartH;
+        const shortDate = item.tanggal.replace('-2026', '').replace('-', ' ');
+        return { x, y, val: item.total, label: shortDate, isLast: i === slice.length - 1 };
+      });
+
+      let pathD = `M ${points[0].x.toFixed(1)} ${points[0].y.toFixed(1)}`;
+      for (let i = 0; i < points.length - 1; i++) {
+        const p0 = points[i];
+        const p1 = points[i + 1];
+        const cx = ((p0.x + p1.x) / 2).toFixed(1);
+        pathD += ` C ${cx} ${p0.y.toFixed(1)}, ${cx} ${p1.y.toFixed(1)}, ${p1.x.toFixed(1)} ${p1.y.toFixed(1)}`;
+      }
+
+      let nodesHtml = '';
+      points.forEach((pt) => {
+        const pillText = formatMoney(pt.val);
+        const pillW = Math.max(44, pillText.length * 6.4 + 14);
+        const pillH = 20;
+        const pillX = Math.min(W - pillW - 2, Math.max(2, pt.x - pillW / 2));
+        const pillY = Math.max(4, pt.y - 28);
+        const bgFill = pt.isLast ? '#0C0C0C' : '#FFFFFF';
+        const txtFill = pt.isLast ? '#FFFFFF' : '#0C0C0C';
+
+        nodesHtml += `
+          <circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="4" fill="#0C0C0C" stroke="#FFFFFF" stroke-width="1.5" />
+          <g class="chart-pill-shadow">
+            <rect x="${pillX.toFixed(1)}" y="${pillY.toFixed(1)}" width="${pillW.toFixed(1)}" height="${pillH}" rx="7" fill="${bgFill}" />
+            <text x="${(pillX + pillW / 2).toFixed(1)}" y="${(pillY + 13.5).toFixed(1)}" text-anchor="middle" fill="${txtFill}" font-size="9.5" font-weight="800">${pillText}</text>
+          </g>
+          <text x="${pt.x.toFixed(1)}" y="${H - 6}" text-anchor="middle" fill="${pt.isLast ? '#0C0C0C' : '#9CA3AF'}" font-size="9.5" font-weight="${pt.isLast ? '800' : '600'}">${pt.label}</text>
+        `;
+      });
+
+      svg.innerHTML = `${gridHtml}<path d="${pathD}" fill="none" stroke="#0C0C0C" stroke-width="2.2" stroke-linecap="round" />${nodesHtml}`;
+    }
+
+    // =========================================================================
+    // 6. RENDER KALENDER GOOGLE ADSENSE & PARSER GOOGLE SHEETS
+    // =========================================================================
+    function renderAdsenseCalendar() {
+      const grid = document.getElementById('adsenseCalendarGrid');
+      const titleEl = document.getElementById('calMonthTitle');
+      const descEl = document.getElementById('adsenseStageDesc');
+      const badgeEl = document.getElementById('adsenseStatusBadge');
+      if (!grid || !titleEl) return;
+
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      titleEl.textContent = `${monthNames[calMonth]} ${calYear}`;
+
+      const stats = calculateStats();
+      if (badgeEl) {
+        badgeEl.textContent = stats.estAkhir >= 100 ? `Est. ${formatMoney(stats.estAkhir)} ✓` : 'Min. $100';
+      }
+
+      const firstDay = new Date(calYear, calMonth, 1).getDay(); // 0=Sun..6=Sat
+      const mondayOffset = (firstDay + 6) % 7;
+      const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+      const recordedDays = new Set(revenueData.map((r) => parseDayNumber(r.tanggal)));
+
+      let cellsHtml = '';
+      for (let i = 0; i < mondayOffset; i++) {
+        cellsHtml += `<div></div>`;
+      }
+
+      for (let d = 1; d <= daysInMonth; d++) {
+        const isSelected = d === selectedCalendarDay;
+        const isTgl3 = d === 3;
+        const isTgl20 = d === 20;
+        const isPayoutWindow = d >= 21 && d <= 26;
+        const hasRev = calMonth === 10 && recordedDays.has(d);
+
+        let cls = 'h-8 rounded-lg flex flex-col items-center justify-center font-bold transition cursor-pointer ';
+        if (isSelected) {
+          cls += 'bg-[#0C0C0C] text-white';
+        } else if (isTgl3 || isTgl20) {
+          cls += 'bg-white border border-[#0C0C0C] text-[#0C0C0C]';
+        } else if (isPayoutWindow) {
+          cls += 'bg-[#E5E7EB] text-[#0C0C0C]';
+        } else {
+          cls += 'bg-white/80 hover:bg-white text-[#374151]';
+        }
+
+        cellsHtml += `
+          <button type="button" data-cal-day="${d}" class="${cls}">
+            <span class="leading-none">${d}</span>
+            ${hasRev ? `<span class="w-1 h-1 rounded-full mt-0.5 ${isSelected ? 'bg-white' : 'bg-[#0C0C0C]'}"></span>` : ''}
+          </button>
+        `;
+      }
+
+      grid.innerHTML = cellsHtml;
+      grid.querySelectorAll('[data-cal-day]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          selectedCalendarDay = parseInt(btn.getAttribute('data-cal-day'), 10);
+          renderAdsenseCalendar();
+        });
+      });
+
+      if (descEl) {
+        if (selectedCalendarDay === 3) {
+          descEl.textContent = 'Tanggal 3: Estimasi penghasilan bulan sebelumnya difinalisasi & diposting ke Pembayaran.';
+        } else if (selectedCalendarDay === 20) {
+          descEl.textContent = 'Tanggal 20: Batas perubahan info pembayaran & pengecekan saldo minimum $100.';
+        } else if (selectedCalendarDay >= 21 && selectedCalendarDay <= 26) {
+          descEl.textContent = `Tanggal ${selectedCalendarDay}: Periode "Pembayaran dalam proses" & transfer ke rekening bank.`;
+        } else {
+          descEl.textContent = `Dipilih: ${selectedCalendarDay} ${monthNames[calMonth]} ${calYear} • Siklus pencairan Tgl 3, 20, & 21–26.`;
+        }
+      }
+    }
+
+    function parseSheetMatrix(matrix) {
+      if (!Array.isArray(matrix) || matrix.length === 0) return false;
+      const parsedRows = [];
+
+      matrix.forEach((row) => {
+        if (!Array.isArray(row)) return;
+        const tanggal = String(row[0] || '').trim();
+        if (/^\d{1,2}-[A-Za-z]{3}-\d{4}$/.test(tanggal) || /^\d{1,2}-\d{1,2}-\d{4}$/.test(tanggal)) {
+          const pk = parseNumberId(row[1]);
+          const cs = parseNumberId(row[2]);
+          const tot = parseNumberId(row[3]) || Number((pk + cs).toFixed(2));
+          parsedRows.push({
+            tanggal,
+            pinkymon: pk,
+            ceria: cs,
+            total: tot
+          });
+        }
+      });
+
+      if (parsedRows.length > 0) {
+        revenueData = parsedRows;
+        selectedDayIndex = revenueData.length - 1;
+        return true;
+      }
+      return false;
+    }
+
+    function parseCsvLine(line) {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          inQuotes = !inQuotes;
+        } else if (ch === ',' && !inQuotes) {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += ch;
+        }
+      }
+      result.push(current.trim());
+      return result;
+    }
+
+    function parseScheduleMatrix(matrix) {
+      if (!Array.isArray(matrix) || matrix.length === 0) return [];
+      const items = [];
+      matrix.forEach((row) => {
+        if (!Array.isArray(row)) return;
+        const tanggal = String(row[2] || '').trim();
+        if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(tanggal) || /^\d{1,2}-[A-Za-z]{3}-\d{4}$/.test(tanggal)) {
+          items.push({
+            no: parseInt(row[0], 10) || items.length + 1,
+            hari: String(row[1] || '').trim(),
+            tanggal,
+            jam: String(row[3] || '').trim(),
+            jenis: String(row[4] || 'Shorts').trim(),
+            judul: String(row[5] || '').trim()
+          });
+        }
+      });
+      return items;
+    }
+
+    async function fetchSheetTabMatrix(tabName, cb) {
+      const jsonUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tabName)}&cb=${cb}`;
+      const csvUrl = `https://docs.google.com/spreadsheets/d/${SPREADSHEET_ID}/gviz/tq?tqx=csv&sheet=${encodeURIComponent(tabName)}&cb=${cb}`;
+
+      try {
+        const res = await fetch(jsonUrl, { cache: 'no-store' });
+        if (res.ok) {
+          const text = await res.text();
+          const s = text.indexOf('{');
+          const e = text.lastIndexOf('}');
+          if (s !== -1 && e > s) {
+            const payload = JSON.parse(text.slice(s, e + 1));
+            const rows = (payload.table && payload.table.rows) || [];
+            return rows.map((r) =>
+              (r.c || []).map((cell) => (cell && (cell.f || cell.v) !== null ? (cell.f || cell.v) : ''))
+            );
+          }
+        }
+      } catch (_e) {}
+
+      try {
+        const csvRes = await fetch(csvUrl, { cache: 'no-store' });
+        if (csvRes.ok) {
+          const csvText = await csvRes.text();
+          return csvText.split(/\r?\n/).map(parseCsvLine);
+        }
+      } catch (_e2) {}
+
+      return null;
+    }
+
+    async function syncLiveSheet(showFeedback = false) {
+      const tinyTag = document.getElementById('liveSyncTinyTag');
+      const icon = document.getElementById('railRefreshIcon');
+      if (tinyTag) tinyTag.textContent = 'Syncing...';
+      if (icon) icon.classList.add('animate-spin');
+
+      const cb = Date.now();
+      let synced = false;
+
+      const revMatrix = await fetchSheetTabMatrix(SHEET_NAME, cb);
+      if (revMatrix) {
+        synced = parseSheetMatrix(revMatrix);
+      }
+
+      // Sinkronkan juga tab jadwal "Cer** Spa**" dan "Pin*y**on"
+      for (const tabKey of Object.values(SCHEDULE_TABS)) {
+        const schedMatrix = await fetchSheetTabMatrix(tabKey, cb);
+        if (schedMatrix) {
+          const parsedSched = parseScheduleMatrix(schedMatrix);
+          if (parsedSched.length > 0) {
+            scheduleData[tabKey] = parsedSched;
+            synced = true;
+          }
+        }
+      }
+
+      const nowStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      const detailTitle = document.getElementById('syncDetailTitle');
+      const detailDesc = document.getElementById('syncDetailDesc');
+
+      if (synced) {
+        if (tinyTag) tinyTag.textContent = `Live • ${nowStr}`;
+        if (detailTitle) detailTitle.textContent = `Status: Terhubung Live (${nowStr})`;
+        if (detailDesc) detailDesc.innerHTML = `Berhasil memuat <strong>${revenueData.length} hari</strong> data revenue & jadwal video dari Google Sheets.`;
+        renderDashboard(true);
+        renderScheduleSlide();
+        if (showFeedback) showToast(`Data Google Sheets diperbarui (${nowStr})`);
+      } else {
+        if (tinyTag) tinyTag.textContent = `Sheet Cache • ${nowStr}`;
+        if (detailTitle) detailTitle.textContent = `Status: Mode Sinkronisasi Lokal (${nowStr})`;
+        if (detailDesc) detailDesc.innerHTML = `Menampilkan <strong>${revenueData.length} hari</strong> data dari tab <strong>Revenue</strong> & jadwal video.`;
+        renderScheduleSlide();
+        if (showFeedback) showToast('Menampilkan data terbaru dari cache sheet');
+      }
+
+      if (icon) icon.classList.remove('animate-spin');
+    }
+
+    function restartAutoSyncTimer() {
+      if (autoSyncTimerId) clearInterval(autoSyncTimerId);
+      autoSyncTimerId = null;
+      if (autoSyncMs > 0) {
+        autoSyncTimerId = setInterval(() => syncLiveSheet(false), autoSyncMs);
+      }
+    }
+
+    // =========================================================================
+    // 7. ANALISIS & RENDER SLIDE 2: CEK VIDEO TERJADWAL (Cer** Spa** & Pin*y**on)
+    // =========================================================================
+    function analyzeChannelSchedule(channelTab) {
+      const rows = scheduleData[channelTab] || [];
+      const expectedSlots = EXPECTED_SLOTS[channelTab] || [];
+      const groupedMap = new Map();
+
+      rows.forEach((item) => {
+        const key = item.tanggal;
+        if (!groupedMap.has(key)) {
+          groupedMap.set(key, {
+            tanggal: item.tanggal,
+            hari: item.hari,
+            videos: []
+          });
+        }
+        groupedMap.get(key).videos.push(item);
+      });
+
+      const days = Array.from(groupedMap.values()).map((dayObj) => {
+        const bookedTimes = new Set(dayObj.videos.map((v) => v.jam));
+        const missingSlots = expectedSlots.filter((slot) => !bookedTimes.has(slot));
+        const count = dayObj.videos.length;
+        const missingCount = Math.max(0, 4 - count);
+        return {
+          ...dayObj,
+          count,
+          missingCount,
+          missingSlots,
+          isComplete: count >= 4
+        };
+      });
+
+      const incompleteDays = days.filter((d) => !d.isComplete);
+      const completeDays = days.filter((d) => d.isComplete);
+      const totalMissingVideos = incompleteDays.reduce((acc, d) => acc + d.missingCount, 0);
+
+      return {
+        totalVideos: rows.length,
+        days,
+        incompleteDays,
+        completeDays,
+        totalMissingVideos,
+        expectedSlots
+      };
+    }
+
+    function switchSlide(targetSlide) {
+      activeSlide = targetSlide;
+      const mainSlide = document.getElementById('mainDashboardSlide');
+      const schedSlide = document.getElementById('scheduleSlideView');
+
+      if (targetSlide === 'schedule') {
+        mainSlide.classList.add('hidden');
+        mainSlide.classList.remove('lg:flex');
+        schedSlide.classList.remove('hidden');
+        schedSlide.classList.add('flex');
+        renderScheduleSlide();
+      } else {
+        schedSlide.classList.add('hidden');
+        schedSlide.classList.remove('flex');
+        mainSlide.classList.remove('hidden');
+        mainSlide.classList.add('lg:flex');
+      }
+    }
+
+    function renderScheduleSlide() {
+      const ceriaAudit = analyzeChannelSchedule('Cer** Spa**');
+      const pinkyAudit = analyzeChannelSchedule('Pin*y**on');
+
+      // Update badges on rail and tabs
+      const totalIncompleteAll = ceriaAudit.incompleteDays.length + pinkyAudit.incompleteDays.length;
+      const railDot = document.getElementById('railScheduleAlertDot');
+      if (railDot) railDot.textContent = totalIncompleteAll;
+      document.getElementById('badgeIncompleteCeria').textContent = ceriaAudit.incompleteDays.length;
+      document.getElementById('badgeIncompletePinky').textContent = pinkyAudit.incompleteDays.length;
+
+      // Active tab styling
+      document.querySelectorAll('.sched-channel-tab').forEach((btn) => {
+        const ch = btn.getAttribute('data-sched-channel');
+        if (ch === activeScheduleChannel) {
+          btn.className = 'sched-channel-tab px-4 py-2 rounded-xl bg-[#0C0C0C] text-white text-xs font-extrabold flex items-center gap-2 transition';
+        } else {
+          btn.className = 'sched-channel-tab px-4 py-2 rounded-xl text-[#4B5563] hover:text-[#0C0C0C] text-xs font-bold flex items-center gap-2 transition';
+        }
+      });
+
+      const audit = activeScheduleChannel === 'Cer** Spa**' ? ceriaAudit : pinkyAudit;
+
+      // Summary stats
+      document.getElementById('schedTotalVideosStat').textContent = `${audit.totalVideos} Video`;
+      document.getElementById('schedCompleteDaysStat').textContent = `${audit.completeDays.length} Hari`;
+      document.getElementById('schedIncompleteDaysStat').textContent = `${audit.incompleteDays.length} Hari`;
+      document.getElementById('schedMissingVideosCountBadge').textContent = audit.totalMissingVideos > 0
+        ? `-${audit.totalMissingVideos} Video`
+        : 'Lengkap';
+      document.getElementById('incompleteAlertHeading').textContent = `Hari Tidak Lengkap 4 Video — ${activeScheduleChannel}`;
+      document.getElementById('incompleteSlotRuleHint').textContent = `Slot standar: ${audit.expectedSlots.join(', ')}`;
+
+      // Highlight Incomplete Days Cards
+      const alertGrid = document.getElementById('incompleteDaysCardsGrid');
+      if (audit.incompleteDays.length === 0) {
+        alertGrid.innerHTML = `
+          <div class="col-span-full rounded-2xl bg-white p-4 text-xs font-semibold text-[#0C0C0C]">
+            Semua hari terjadwal pada channel ${activeScheduleChannel} sudah lengkap 4 video!
+          </div>
+        `;
+      } else {
+        alertGrid.innerHTML = audit.incompleteDays
+          .map((day) => `
+            <div class="rounded-2xl bg-white p-3.5 border border-[#E5E7EB] flex flex-col justify-between gap-2">
+              <div class="flex items-center justify-between gap-2">
+                <div>
+                  <div class="text-xs font-extrabold text-[#0C0C0C]">${day.hari}, ${day.tanggal}</div>
+                  <div class="text-[11px] font-medium text-[#6B7280]">Terisi ${day.count} dari 4 video</div>
+                </div>
+                <span class="px-2.5 py-1 rounded-full bg-[#0C0C0C] text-white text-[10px] font-extrabold">
+                  Kurang ${day.missingCount}
+                </span>
+              </div>
+              <div class="pt-1.5 border-t border-[#F3F4F6] text-[10px] font-semibold text-[#EF4444]">
+                Kosong: ${day.missingSlots.join(' & ')}
+              </div>
+            </div>
+          `)
+          .join('');
+      }
+
+      // Filter & Search Daily Breakdown Cards
+      const q = scheduleSearchQuery.trim().toLowerCase();
+      const filteredDays = audit.days.filter((day) => {
+        if (activeScheduleFilter === 'incomplete' && day.isComplete) return false;
+        if (activeScheduleFilter === 'complete' && !day.isComplete) return false;
+        if (!q) return true;
+        const blob = `${day.hari} ${day.tanggal} ${day.videos.map((v) => `${v.jam} ${v.judul}`).join(' ')}`.toLowerCase();
+        return blob.includes(q);
+      });
+
+      document.getElementById('schedRenderedDaysLabel').textContent = `${filteredDays.length} hari ditampilkan`;
+
+      const cardsContainer = document.getElementById('scheduleDailyCardsContainer');
+      if (filteredDays.length === 0) {
+        cardsContainer.innerHTML = `
+          <div class="rounded-2xl soft-card p-6 text-center text-xs text-[#6B7280]">
+            Tidak ada jadwal video yang cocok dengan filter atau pencarian.
+          </div>
+        `;
+        return;
+      }
+
+      cardsContainer.innerHTML = filteredDays
+        .map((day) => {
+          const dayNum = parseDayNumber(day.tanggal);
+          const slotPillsHtml = audit.expectedSlots
+            .map((slotTime) => {
+              const foundVideo = day.videos.find((v) => v.jam === slotTime);
+              if (foundVideo) {
+                return `
+                  <div class="rounded-xl bg-white px-3 py-2 border border-[#E5E7EB] flex items-center justify-between gap-2 min-w-0">
+                    <div class="min-w-0">
+                      <div class="text-[10px] font-extrabold text-[#0C0C0C]">${slotTime} • ${foundVideo.jenis}</div>
+                      <div class="text-[11px] font-medium text-[#4B5563] truncate">${foundVideo.judul}</div>
+                    </div>
+                    <span class="w-5 h-5 rounded-full bg-[#0C0C0C] text-white text-[10px] font-bold flex items-center justify-center shrink-0">✓</span>
+                  </div>
+                `;
+              }
+              return `
+                <div class="rounded-xl bg-white/60 px-3 py-2 border border-dashed border-[#EF4444] flex items-center justify-between gap-2">
+                  <div>
+                    <div class="text-[10px] font-extrabold text-[#EF4444]">${slotTime} • Slot Kosong</div>
+                    <div class="text-[11px] font-medium text-[#6B7280]">Belum ada video terjadwal</div>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full bg-[#EF4444] text-white text-[9px] font-extrabold shrink-0">Kosong</span>
+                </div>
+              `;
+            })
+            .join('');
+
+          return `
+            <div class="rounded-[18px] soft-card p-4 ${!day.isComplete ? 'ring-1 ring-[#0C0C0C]' : ''}">
+              <div class="flex items-center justify-between gap-3 mb-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center font-black text-xs text-[#0C0C0C] shadow-2xs">
+                    ${dayNum}
+                  </div>
+                  <div>
+                    <div class="text-xs sm:text-sm font-extrabold text-[#0C0C0C]">${day.hari}, ${day.tanggal}</div>
+                    <div class="text-[11px] font-medium text-[#6B7280]">
+                      ${day.isComplete ? 'Kuota harian 4 Shorts terpenuhi' : `Kurang ${day.missingCount} video (${day.missingSlots.join(', ')})`}
+                    </div>
+                  </div>
+                </div>
+
+                <span class="px-3.5 py-1.5 rounded-full text-xs font-extrabold ${
+                  day.isComplete
+                    ? 'bg-white text-[#0C0C0C] border border-[#E5E7EB]'
+                    : 'bg-[#0C0C0C] text-white'
+                }">
+                  ${day.count}/4 Video
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                ${slotPillsHtml}
+              </div>
+            </div>
+          `;
+        })
+        .join('');
+    }
+
+    // =========================================================================
+    // 8. MASTER RENDER & EVENT LISTENERS
+    // =========================================================================
+    function renderDashboard(autoScrollBottom = true) {
+      const stats = calculateStats();
+
+      // Update Big Stat Boxes
+      document.getElementById('bigTotalMonth').textContent = formatMoney(stats.totalBulan);
+      document.getElementById('bigEstMonth').textContent = formatMoney(stats.estAkhir);
+      document.getElementById('syncRedBadge').textContent = stats.daysCount;
+      document.getElementById('currencyAvatarBadge').textContent = currencyMode === 'USD' ? '$' : 'Rp';
+
+      // Update Active Strip (Hanya menampilkan 1 data hari terakhir sesuai request)
+      const latestRow = revenueData[revenueData.length - 1] || revenueData[0];
+      if (latestRow) {
+        document.getElementById('stripDayBadge').textContent = parseDayNumber(latestRow.tanggal);
+        document.getElementById('stripTitle').textContent = latestRow.tanggal;
+        document.getElementById('stripSubtitle').textContent = `PK ${formatMoney(latestRow.pinkymon)} • CS ${formatMoney(latestRow.ceria)}`;
+        document.getElementById('stripTotalPill').textContent = formatMoney(latestRow.total);
+      }
+
+      // Update Circular Progress Ring (AdSense $100 Threshold)
+      const circumference = 87.96;
+      const offset = circumference - (stats.adsensePct / 100) * circumference;
+      document.getElementById('adsenseRingCircle').setAttribute('stroke-dashoffset', offset.toFixed(2));
+      document.getElementById('adsenseRingText').textContent = `${stats.adsensePct}%`;
+
+      // Update Channel Split View
+      document.getElementById('csAmountLabel').textContent = `${formatMoney(stats.csTotal)} (${stats.csPct.toFixed(1)}%)`;
+      document.getElementById('pkAmountLabel').textContent = `${formatMoney(stats.pkTotal)} (${stats.pkPct.toFixed(1)}%)`;
+      document.getElementById('csBarFill').style.width = `${stats.csPct.toFixed(1)}%`;
+      document.getElementById('pkBarFill').style.width = `${stats.pkPct.toFixed(1)}%`;
+      document.getElementById('stockInfoLeft').textContent = `Pinkymon: ${sheetSummary.stockPkBadge} (${sheetSummary.stockPkNote})`;
+      document.getElementById('stockInfoRight').textContent = `Ceria: ${sheetSummary.stockCsBadge}`;
+
+      renderDailyList(autoScrollBottom);
+      renderEditorialWaveChart();
+      renderAdsenseCalendar();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderDashboard(true);
+      renderScheduleSlide();
+      syncLiveSheet(false);
+      restartAutoSyncTimer();
+
+      // Stepper Prev / Next Day Buttons
+      document.getElementById('prevDayStepBtn').addEventListener('click', () => {
+        selectedDayIndex = Math.max(0, selectedDayIndex - 1);
+        selectedCalendarDay = parseDayNumber(revenueData[selectedDayIndex].tanggal);
+        renderDashboard(false);
+      });
+
+      document.getElementById('nextDayStepBtn').addEventListener('click', () => {
+        selectedDayIndex = Math.min(revenueData.length - 1, selectedDayIndex + 1);
+        selectedCalendarDay = parseDayNumber(revenueData[selectedDayIndex].tanggal);
+        renderDashboard(false);
+      });
+
+      // Left Rail Navigation
+      document.querySelectorAll('.rail-nav-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.rail-nav-btn').forEach((b) => {
+            b.className = 'rail-nav-btn relative w-10 h-10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 flex items-center justify-center transition';
+          });
+          btn.className = 'rail-nav-btn relative w-10 h-10 rounded-xl bg-white/15 text-white flex items-center justify-center transition';
+
+          const nav = btn.getAttribute('data-nav');
+          if (nav === 'schedule') {
+            switchSlide('schedule');
+          } else {
+            switchSlide('revenue');
+            if (nav === 'adsense') {
+              document.getElementById('adsenseCalendarCard').scrollIntoView({ behavior: 'smooth' });
+            } else if (nav === 'daily') {
+              document.getElementById('dailyRevenueSection').scrollIntoView({ behavior: 'smooth' });
+            } else {
+              document.getElementById('leftColumnSection').scrollIntoView({ behavior: 'smooth' });
+            }
+          }
+        });
+      });
+
+      // Back to Main Revenue Slide Button
+      document.getElementById('backToRevenueBtn').addEventListener('click', () => {
+        document.querySelectorAll('.rail-nav-btn').forEach((b) => {
+          b.className = 'rail-nav-btn relative w-10 h-10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 flex items-center justify-center transition';
+        });
+        const homeBtn = document.querySelector('.rail-nav-btn[data-nav="overview"]');
+        if (homeBtn) {
+          homeBtn.className = 'rail-nav-btn relative w-10 h-10 rounded-xl bg-white/15 text-white flex items-center justify-center transition';
+        }
+        switchSlide('revenue');
+      });
+
+      // Schedule Slide Channel Tabs ("Cer** Spa**" & "Pin*y**on")
+      document.querySelectorAll('.sched-channel-tab').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          activeScheduleChannel = btn.getAttribute('data-sched-channel');
+          renderScheduleSlide();
+        });
+      });
+
+      // Schedule Slide Filter Tabs
+      document.querySelectorAll('.sched-filter-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          activeScheduleFilter = btn.getAttribute('data-sched-filter');
+          document.querySelectorAll('.sched-filter-btn').forEach((b) => {
+            b.className = 'sched-filter-btn font-semibold text-[#9CA3AF] hover:text-[#0C0C0C] whitespace-nowrap transition';
+          });
+          btn.className = 'sched-filter-btn font-bold text-[#0C0C0C] whitespace-nowrap transition';
+          renderScheduleSlide();
+        });
+      });
+
+      // Schedule Slide Search Input
+      document.getElementById('scheduleSearchInput').addEventListener('input', (e) => {
+        scheduleSearchQuery = e.target.value;
+        renderScheduleSlide();
+      });
+
+      // Copy Incomplete Days Audit Button
+      document.getElementById('copyScheduleAuditBtn').addEventListener('click', () => {
+        const ceriaAudit = analyzeChannelSchedule('Cer** Spa**');
+        const pinkyAudit = analyzeChannelSchedule('Pin*y**on');
+
+        const formatChannelAudit = (name, audit) => {
+          if (audit.incompleteDays.length === 0) return `• ${name}: Semua hari lengkap 4 video.`;
+          const lines = audit.incompleteDays.map(
+            (d) => `  - ${d.hari}, ${d.tanggal}: ${d.count}/4 video (Kurang ${d.missingCount} slot: ${d.missingSlots.join(', ')})`
+          );
+          return `• ${name} (${audit.incompleteDays.length} hari belum lengkap):\n${lines.join('\n')}`;
+        };
+
+        const reportText = [
+          'Audit Jadwal Video YouTube (Target 4 Video/Hari)',
+          formatChannelAudit('Cer** Spa**', ceriaAudit),
+          formatChannelAudit('Pin*y**on', pinkyAudit)
+        ].join('\n\n');
+
+        const tempArea = document.createElement('textarea');
+        tempArea.value = reportText;
+        document.body.appendChild(tempArea);
+        tempArea.select();
+        try {
+          document.execCommand('copy');
+          showToast('Daftar hari kurang 4 video berhasil disalin');
+        } catch (_err) {
+          showToast('Gagal menyalin audit jadwal');
+        }
+        document.body.removeChild(tempArea);
+      });
+
+      // Revenue Search & Filter Tabs
+      document.getElementById('searchInput').addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        renderDailyList(false);
+      });
+
+      document.querySelectorAll('.tab-filter-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          activeFilter = btn.getAttribute('data-filter');
+          document.querySelectorAll('.tab-filter-btn').forEach((b) => {
+            b.className = 'tab-filter-btn font-semibold text-[#9CA3AF] hover:text-[#0C0C0C] whitespace-nowrap transition';
+          });
+          btn.className = 'tab-filter-btn font-bold text-[#0C0C0C] whitespace-nowrap transition';
+          renderDailyList(true);
+        });
+      });
+
+      // Statistics Sub-tabs ("Tren Harian" vs "Per Channel")
+      document.querySelectorAll('.stat-tab-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          activeStatTab = btn.getAttribute('data-stat-tab');
+          document.querySelectorAll('.stat-tab-btn').forEach((b) => {
+            b.className = 'stat-tab-btn font-semibold text-[#9CA3AF] hover:text-[#0C0C0C] transition';
+          });
+          btn.className = 'stat-tab-btn font-bold text-[#0C0C0C] transition';
+
+          if (activeStatTab === 'channels') {
+            document.getElementById('trendChartContainer').classList.add('hidden');
+            document.getElementById('channelSplitContainer').classList.remove('hidden');
+          } else {
+            document.getElementById('channelSplitContainer').classList.add('hidden');
+            document.getElementById('trendChartContainer').classList.remove('hidden');
+          }
+        });
+      });
+
+      // Currency Toggle ($ / Rp)
+      document.getElementById('currencyToggleBtn').addEventListener('click', () => {
+        currencyMode = currencyMode === 'USD' ? 'IDR' : 'USD';
+        renderDashboard(false);
+        showToast(`Mata uang diubah ke ${currencyMode}`);
+      });
+
+      // AdSense Calendar Navigation & Milestone Pills
+      document.getElementById('prevCalBtn').addEventListener('click', () => {
+        calMonth--;
+        if (calMonth < 0) {
+          calMonth = 11;
+          calYear--;
+        }
+        renderAdsenseCalendar();
+      });
+
+      document.getElementById('nextCalBtn').addEventListener('click', () => {
+        calMonth++;
+        if (calMonth > 11) {
+          calMonth = 0;
+          calYear++;
+        }
+        renderAdsenseCalendar();
+      });
+
+      document.querySelectorAll('.adsense-pill-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          selectedCalendarDay = parseInt(btn.getAttribute('data-adsense-jump'), 10);
+          renderAdsenseCalendar();
+        });
+      });
+
+      // Copy Revenue Report
+      document.getElementById('copyReportBtn').addEventListener('click', () => {
+        const stats = calculateStats();
+        const latest = revenueData[revenueData.length - 1];
+        const summary = [
+          'Laporan Penghasilan YouTube (Sheet: Revenue)',
+          `• Total Bulan Ini (${stats.daysCount} hari): ${formatMoney(stats.totalBulan)}`,
+          `• Estimasi Akhir Bulan: ${formatMoney(stats.estAkhir)}`,
+          `• Ceria Space: ${formatMoney(stats.csTotal)} (${stats.csPct.toFixed(1)}%)`,
+          `• Pinkymon: ${formatMoney(stats.pkTotal)} (${stats.pkPct.toFixed(1)}%)`,
+          latest ? `• Hari Terakhir (${latest.tanggal}): ${formatMoney(latest.total)}` : ''
+        ].filter(Boolean).join('\n');
+
+        const tempArea = document.createElement('textarea');
+        tempArea.value = summary;
+        document.body.appendChild(tempArea);
+        tempArea.select();
+        try {
+          document.execCommand('copy');
+          showToast('Laporan penghasilan berhasil disalin');
+        } catch (_e) {
+          showToast('Gagal menyalin laporan');
+        }
+        document.body.removeChild(tempArea);
+      });
+
+      // Input Modal Controls
+      const addModal = document.getElementById('addModal');
+      const openAddModal = () => {
+        const nextNum = revenueData.length + 1;
+        document.getElementById('inputTanggal').value = `${nextNum}-Nov-2026`;
+        addModal.classList.remove('hidden');
+        addModal.classList.add('flex');
+      };
+      const closeAddModal = () => {
+        addModal.classList.add('hidden');
+        addModal.classList.remove('flex');
+      };
+
+      document.getElementById('railAddBtn').addEventListener('click', openAddModal);
+      document.getElementById('closeModalBtn').addEventListener('click', closeAddModal);
+      document.getElementById('cancelModalBtn').addEventListener('click', closeAddModal);
+
+      document.getElementById('addForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const tanggal = document.getElementById('inputTanggal').value.trim();
+        const pk = parseFloat(document.getElementById('inputPinkymon').value) || 0;
+        const cs = parseFloat(document.getElementById('inputCeria').value) || 0;
+        const tot = Number((pk + cs).toFixed(2));
+        revenueData.push({ tanggal, pinkymon: pk, ceria: cs, total: tot });
+        selectedDayIndex = revenueData.length - 1;
+        closeAddModal();
+        renderDashboard(true);
+        showToast(`Data ${tanggal} ditambahkan`);
+      });
+
+      // Sync Help Modal & Refresh Controls
+      const syncHelpModal = document.getElementById('syncHelpModal');
+      const openSyncModal = () => {
+        syncHelpModal.classList.remove('hidden');
+        syncHelpModal.classList.add('flex');
+      };
+      const closeSyncModal = () => {
+        syncHelpModal.classList.add('hidden');
+        syncHelpModal.classList.remove('flex');
+      };
+
+      document.getElementById('railSyncSettingsBtn').addEventListener('click', openSyncModal);
+      document.getElementById('syncBellBtn').addEventListener('click', openSyncModal);
+      document.getElementById('closeSyncHelpBtn').addEventListener('click', closeSyncModal);
+      document.getElementById('dismissSyncModalBtn').addEventListener('click', closeSyncModal);
+
+      document.getElementById('railRefreshBtn').addEventListener('click', () => syncLiveSheet(true));
+      document.getElementById('forceSyncFromModalBtn').addEventListener('click', () => {
+        syncLiveSheet(true);
+        closeSyncModal();
+      });
+
+      document.getElementById('autoSyncIntervalSelect').addEventListener('change', (e) => {
+        autoSyncMs = parseInt(e.target.value, 10);
+        restartAutoSyncTimer();
+        showToast(autoSyncMs > 0 ? `Auto-sync diatur setiap ${autoSyncMs / 60000} menit` : 'Auto-sync diatur ke manual');
+      });
+    });
+  </script>
+</body>
+</html>
