@@ -1,0 +1,2888 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Dashboard Penghasilan YouTube — Revenue & AdSense</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #EFEFEF;
+      color: #0C0C0C;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Bingkai utama putih bersih ala referensi */
+    .editorial-shell {
+      background-color: #FFFFFF;
+      box-shadow: 0 28px 75px rgba(12, 12, 12, 0.07);
+    }
+
+    /* Rel navigasi hitam pekat dengan bayangan halus */
+    .black-rail {
+      background-color: #0C0C0C;
+      box-shadow: 0 18px 40px rgba(12, 12, 12, 0.22);
+    }
+
+    /* Kartu abu-abu lembut (#F5F6F8) ala referensi */
+    .soft-card {
+      background-color: #F5F6F8;
+    }
+
+    /* Floating pill label pada titik grafik */
+    .chart-pill-shadow {
+      filter: drop-shadow(0 4px 8px rgba(12, 12, 12, 0.12));
+    }
+
+    /* Scrollbar minimalis */
+    .slim-scroll::-webkit-scrollbar {
+      width: 5px;
+      height: 5px;
+    }
+    .slim-scroll::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .slim-scroll::-webkit-scrollbar-thumb {
+      background: #D4D6DC;
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-2.5 sm:p-5 lg:p-8 flex items-start justify-center">
+
+  <!-- Toast Notification -->
+  <div id="toastBox" class="fixed bottom-5 right-5 z-50 hidden items-center gap-2.5 px-4 py-3 rounded-2xl bg-[#0C0C0C] text-white text-xs font-medium shadow-2xl">
+    <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+    <span id="toastText">Berhasil diperbarui</span>
+  </div>
+
+  <!-- Modal Input Pendapatan Harian -->
+  <div id="addModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/45 backdrop-blur-xs p-4">
+    <div class="w-full max-w-md rounded-[24px] bg-white border border-[#E5E7EB] shadow-2xl p-6">
+      <div class="flex items-center justify-between mb-5">
+        <div>
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-[#8C8F96]">Sheet: Revenue • Data Youtube</span>
+          <h3 class="text-lg font-extrabold text-[#0C0C0C]">Input Pendapatan Harian</h3>
+        </div>
+        <button id="closeModalBtn" class="w-9 h-9 rounded-full bg-[#F5F6F8] hover:bg-[#E5E7EB] flex items-center justify-center transition">
+          <svg class="w-4 h-4 text-[#0C0C0C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <form id="addForm" class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold text-[#374151] mb-1.5">Tanggal</label>
+          <input type="text" id="inputTanggal" value="17-Nov-2026" required class="w-full px-4 py-2.5 rounded-xl bg-[#F5F6F8] border border-transparent focus:border-[#0C0C0C] focus:bg-white text-sm font-medium focus:outline-none transition" />
+        </div>
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block text-xs font-semibold text-[#374151] mb-1.5">Pinkymon (USD)</label>
+            <input type="number" step="0.01" min="0" id="inputPinkymon" placeholder="2.10" required class="w-full px-4 py-2.5 rounded-xl bg-[#F5F6F8] border border-transparent focus:border-[#0C0C0C] focus:bg-white text-sm font-medium focus:outline-none transition" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-[#374151] mb-1.5">Ceria Space (USD)</label>
+            <input type="number" step="0.01" min="0" id="inputCeria" placeholder="2.45" required class="w-full px-4 py-2.5 rounded-xl bg-[#F5F6F8] border border-transparent focus:border-[#0C0C0C] focus:bg-white text-sm font-medium focus:outline-none transition" />
+          </div>
+        </div>
+        <div class="flex items-center justify-end gap-2 pt-2">
+          <button type="button" id="cancelModalBtn" class="px-4 py-2.5 rounded-xl text-xs font-semibold text-[#6B7280] hover:bg-[#F5F6F8] transition">Batal</button>
+          <button type="submit" class="px-5 py-2.5 rounded-xl bg-[#0C0C0C] hover:bg-neutral-800 text-white text-xs font-semibold transition">Simpan Data</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal Pengaturan Auto-Sync Google Sheets -->
+  <div id="syncHelpModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/45 backdrop-blur-xs p-4">
+    <div class="w-full max-w-md rounded-[24px] bg-white border border-[#E5E7EB] shadow-2xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-[#8C8F96]">Live Spreadsheet Sync</span>
+          <h3 class="text-lg font-extrabold text-[#0C0C0C]">Auto-Sync Google Sheets</h3>
+        </div>
+        <button id="closeSyncHelpBtn" class="w-9 h-9 rounded-full bg-[#F5F6F8] hover:bg-[#E5E7EB] flex items-center justify-center transition">
+          <svg class="w-4 h-4 text-[#0C0C0C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-[#F5F6F8] text-xs text-[#1F2937] space-y-1.5 mb-3.5">
+        <div class="font-bold text-[#0C0C0C]" id="syncDetailTitle">Status: Menghubungkan ke Google Sheets...</div>
+        <p id="syncDetailDesc" class="text-[#6B7280] leading-relaxed">
+          Dashboard otomatis mengambil data terbaru dari tab <strong>Revenue</strong> setiap beberapa menit sekali.
+        </p>
+      </div>
+
+      <div class="p-4 rounded-2xl bg-[#F5F6F8] text-xs space-y-2 mb-4">
+        <div class="flex items-center justify-between">
+          <span class="font-semibold text-[#0C0C0C]">Interval Pembaruan</span>
+          <select id="autoSyncIntervalSelect" class="px-3 py-1.5 rounded-xl bg-white border border-[#E5E7EB] text-xs font-bold text-[#0C0C0C] focus:outline-none cursor-pointer">
+            <option value="60000">Setiap 1 Menit</option>
+            <option value="120000" selected>Setiap 2 Menit</option>
+            <option value="300000">Setiap 5 Menit</option>
+            <option value="0">Manual Saja</option>
+          </select>
+        </div>
+        <p class="text-[11px] text-[#6B7280] leading-relaxed">
+          Pastikan akses berbagi spreadsheet <strong>Data Youtube</strong> diset ke <em>"Siapa saja yang memiliki link (Pelihat)"</em> agar pembaruan berjalan otomatis.
+        </p>
+      </div>
+
+      <div class="flex items-center justify-between gap-2">
+        <button id="forceSyncFromModalBtn" class="flex-1 py-2.5 px-4 rounded-xl bg-[#0C0C0C] hover:bg-neutral-800 text-white text-xs font-semibold transition">
+          Ambil Data Sekarang
+        </button>
+        <button id="dismissSyncModalBtn" class="py-2.5 px-4 rounded-xl bg-[#F5F6F8] hover:bg-[#E5E7EB] text-[#0C0C0C] text-xs font-semibold transition">
+          Tutup
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal Setup Webhook Google Apps Script (Kirim Centang E5:E8 ke Spreadsheet) -->
+  <div id="webhookModal" class="fixed inset-0 z-50 hidden items-center justify-center bg-black/45 backdrop-blur-xs p-4">
+    <div class="w-full max-w-lg rounded-[24px] bg-white border border-[#E5E7EB] shadow-2xl p-6">
+      <div class="flex items-center justify-between mb-4">
+        <div>
+          <span id="webhookModalSubtitle" class="text-[11px] font-semibold uppercase tracking-wider text-[#8C8F96]">ceria space • Tab Logs (Sel E5:F8)</span>
+          <h3 class="text-lg font-extrabold text-[#0C0C0C]">Setup Webhook Apps Script</h3>
+        </div>
+        <button id="closeWebhookModalBtn" class="w-9 h-9 rounded-full bg-[#F5F6F8] hover:bg-[#E5E7EB] flex items-center justify-center transition">
+          <svg class="w-4 h-4 text-[#0C0C0C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+        </button>
+      </div>
+
+      <p id="webhookModalDesc" class="text-xs text-[#4B5563] leading-relaxed mb-3">
+        Tempel <strong>URL Web App Google Apps Script</strong> dari spreadsheet <code id="webhookModalSheetTag" class="px-1.5 py-0.5 rounded bg-[#F5F6F8] text-[#0C0C0C] font-semibold">ceria space</code> agar saat Anda mencentang checkbox di dashboard, nilai <strong>TRUE / FALSE</strong> langsung tertulis ke sel <strong>E5:E8</strong> di Google Sheets.
+      </p>
+
+      <div class="space-y-3 mb-4">
+        <div>
+          <label class="block text-xs font-bold text-[#0C0C0C] mb-1.5">URL Web App Apps Script</label>
+          <input
+            type="url"
+            id="webhookUrlInput"
+            placeholder="https://script.google.com/macros/s/AKfycb.../exec"
+            class="w-full px-4 py-2.5 rounded-xl bg-[#F5F6F8] border border-transparent focus:border-[#0C0C0C] focus:bg-white text-xs font-medium text-[#0C0C0C] focus:outline-none transition"
+          />
+        </div>
+
+        <div class="rounded-2xl bg-[#F5F6F8] p-3.5 text-[11px] text-[#374151] space-y-2">
+          <div class="flex items-center justify-between">
+            <span class="font-bold text-[#0C0C0C]">1. Salin Kode Google Apps Script</span>
+            <button type="button" id="copyAppsScriptCodeBtn" class="px-3 py-1 rounded-full bg-[#0C0C0C] text-white text-[10px] font-bold hover:bg-neutral-800 transition">
+              Salin Kode Apps Script
+            </button>
+          </div>
+          <p class="text-[#6B7280] leading-relaxed">
+            Buka <strong>Ekstensi &rarr; Apps Script</strong> di spreadsheet, tempel kode yang disalin, lalu klik <strong>Terapkan &rarr; Deployment baru &rarr; Aplikasi web</strong> (Jalankan sebagai: <em>Saya</em>, Yang memiliki akses: <em>Siapa saja</em>).
+          </p>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between gap-2">
+        <button type="button" id="saveWebhookUrlBtn" class="flex-1 py-2.5 px-4 rounded-xl bg-[#0C0C0C] hover:bg-neutral-800 text-white text-xs font-bold transition">
+          Simpan URL Webhook
+        </button>
+        <button type="button" id="clearWebhookUrlBtn" class="py-2.5 px-4 rounded-xl bg-[#F5F6F8] hover:bg-[#E5E7EB] text-[#0C0C0C] text-xs font-semibold transition">
+          Reset
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ======================================================================= -->
+  <!-- MAIN EDITORIAL SHELL (CLEAN WHITE CANVAS + BLACK ICON RAIL)             -->
+  <!-- ======================================================================= -->
+  <div class="w-full max-w-[1320px] rounded-[28px] editorial-shell p-3.5 sm:p-6 lg:p-7 flex flex-col lg:flex-row gap-5 lg:gap-8">
+
+    <!-- ===================================================================== -->
+    <!-- 1. LEFT VERTICAL BLACK ICON RAIL (ALA REFERENSI "F.")                 -->
+    <!-- ===================================================================== -->
+    <nav class="order-0 w-full lg:w-[68px] rounded-[22px] black-rail text-white px-4 py-3 lg:py-6 flex lg:flex-col items-center justify-between shrink-0">
+      <!-- Top Brand Monogram "Y." -->
+      <div class="text-2xl font-black tracking-tighter text-white select-none lg:mb-6">
+        Y<span class="text-white">.</span>
+      </div>
+
+      <!-- Navigation Icons -->
+      <div class="flex lg:flex-col items-center gap-2 sm:gap-3 lg:gap-5">
+        <button data-nav="overview" title="Overview Dashboard" class="rail-nav-btn w-10 h-10 rounded-xl bg-white/15 text-white flex items-center justify-center transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        </button>
+
+        <button data-nav="daily" title="Daily Revenue" class="rail-nav-btn w-10 h-10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 flex items-center justify-center transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        </button>
+
+        <button data-nav="adsense" title="Kalender Google AdSense" class="rail-nav-btn w-10 h-10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 flex items-center justify-center transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+        </button>
+
+        <button data-nav="schedule" title="Cek Jadwal Video (Cer** Spa** & Pin*y**on)" class="rail-nav-btn relative w-10 h-10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 flex items-center justify-center transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+          <span id="railScheduleAlertDot" class="absolute top-1.5 right-1.5 min-w-[15px] h-[15px] px-1 rounded-full bg-[#EF4444] text-white text-[9px] font-extrabold flex items-center justify-center">5</span>
+        </button>
+
+        <!-- Icon Penjadwalan Video (Kamera Video + Logo Jam) -->
+        <button data-nav="automation" title="Penjadwalan Video & Data Logs (Ceria Space & Pinkymon)" class="rail-nav-btn relative w-10 h-10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 flex items-center justify-center transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M10.5 18H5a2 2 0 01-2-2V8a2 2 0 012-2h8a2 2 0 012 2v2.5"/>
+            <circle cx="17" cy="17" r="4.5" fill="#0C0C0C" stroke="currentColor" stroke-width="1.8"/>
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M17 15v2.2l1.4 1"/>
+          </svg>
+        </button>
+
+        <button id="railAddBtn" title="Input Pendapatan Harian" class="w-10 h-10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 flex items-center justify-center transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M12 4v16m8-8H4"/></svg>
+        </button>
+
+        <button id="railSyncSettingsBtn" title="Pengaturan Auto-Sync Sheet" class="w-10 h-10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 flex items-center justify-center transition">
+          <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+      </div>
+
+      <!-- Bottom Refresh / Sync Icon -->
+      <button id="railRefreshBtn" title="Sinkron Ulang Google Sheets" class="w-10 h-10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 flex items-center justify-center transition">
+        <svg id="railRefreshIcon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M4 4v5h5M20 20v-5h-5M4.93 9a8 8 0 0113.8-2.36L20 9m-.93 6a8 8 0 01-13.8 2.36L4 15"/></svg>
+      </button>
+    </nav>
+
+    <!-- ===================================================================== -->
+    <!-- SLIDE 1: MAIN REVENUE & ADSENSE DASHBOARD VIEW                        -->
+    <!-- ===================================================================== -->
+    <div id="mainDashboardSlide" class="contents lg:flex lg:flex-1 lg:gap-8 lg:min-w-0">
+
+      <!-- =================================================================== -->
+      <!-- 2. CENTER-LEFT COLUMN: HERO BANNER + LATEST DAY STRIP + ADSENSE CAL -->
+      <!-- =================================================================== -->
+      <div id="leftColumnSection" class="contents lg:flex lg:w-[54%] lg:flex-col lg:justify-between lg:space-y-5 lg:min-w-0">
+
+        <!-- HERO GREETING BANNER ("Hello Dani!" + Editorial Monochrome Character) -->
+        <div class="order-1 rounded-[24px] soft-card px-6 py-5 sm:px-7 sm:py-6 flex items-center justify-between gap-4 overflow-hidden">
+          <div class="space-y-1.5 max-w-[260px] sm:max-w-[300px]">
+            <h1 class="text-2xl sm:text-[30px] font-extrabold tracking-tight text-[#0C0C0C] leading-tight">
+              Hello Dani!
+            </h1>
+            <p class="text-xs sm:text-[13px] font-medium text-[#6B7280] leading-relaxed">
+              Senang melihat progres Pinkymon &amp; Ceria Space hari ini.
+            </p>
+          </div>
+
+          <!-- Editorial Monochrome Waving Character SVG (Restored Clean Reference Style) -->
+          <svg class="w-24 h-24 sm:w-28 sm:h-28 shrink-0 text-[#0C0C0C]" viewBox="0 0 120 115" fill="none">
+            <!-- Top Hair Bun + White Hairband Accent -->
+            <ellipse cx="76" cy="15" rx="11" ry="8" fill="#0C0C0C"/>
+            <path d="M67 16.5C71 13 81 13 85 16.5" stroke="#FFFFFF" stroke-width="2" stroke-linecap="round"/>
+
+            <!-- Left & Right Ears -->
+            <path d="M57 41H54C52.3 41 51 42.3 51 44V47C51 48.7 52.3 50 54 50H57" fill="#FFFFFF" stroke="#0C0C0C" stroke-width="2.3" stroke-linecap="round"/>
+            <path d="M95 41H98C99.7 41 101 42.3 101 44V47C101 48.7 99.7 50 98 50H95" fill="#FFFFFF" stroke="#0C0C0C" stroke-width="2.3" stroke-linecap="round"/>
+
+            <!-- Head Contour -->
+            <path d="M57 37C57 27.5 65 22 76 22C87 22 95 27.5 95 37V46C95 57 87 64 76 64C65 64 57 57 57 46V37Z" fill="#FFFFFF" stroke="#0C0C0C" stroke-width="2.4"/>
+
+            <!-- Front Hair Cap -->
+            <path d="M56.5 39C56.5 25.5 64.5 19 76 19C87.5 19 95.5 25.5 95.5 39C93 31.5 85.5 28 76 28C66.5 28 59 31.5 56.5 39Z" fill="#0C0C0C"/>
+
+            <!-- Round Glasses & Friendly Pupils -->
+            <circle cx="68" cy="43" r="6.5" fill="#FFFFFF" stroke="#0C0C0C" stroke-width="2.2"/>
+            <circle cx="84" cy="43" r="6.5" fill="#FFFFFF" stroke="#0C0C0C" stroke-width="2.2"/>
+            <line x1="74.5" y1="43" x2="77.5" y2="43" stroke="#0C0C0C" stroke-width="2.2"/>
+            <circle cx="68" cy="43" r="1.8" fill="#0C0C0C"/>
+            <circle cx="84" cy="43" r="1.8" fill="#0C0C0C"/>
+
+            <!-- Nose & Gentle Smile -->
+            <path d="M76 45V50.5H78.5" stroke="#0C0C0C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M71 55.5C73 58 79 58 81 55.5" stroke="#0C0C0C" stroke-width="2.2" stroke-linecap="round"/>
+
+            <!-- Neck & Black Shirt Shoulders -->
+            <rect x="70.5" y="63" width="11" height="14" rx="4" fill="#FFFFFF" stroke="#0C0C0C" stroke-width="2.3"/>
+            <path d="M48 106C48 86 58 75 76 75C94 75 104 86 104 106H48Z" fill="#0C0C0C"/>
+
+            <!-- Friendly Waving Hand & Motion Lines -->
+            <path d="M39 78L27 54C26 52 28.5 50.5 30 52.5L35 61L32 45C31.5 42.5 34.5 42 35.2 44.5L38.5 58L39.5 42C39.8 39.5 42.8 39.8 42.6 42.3L42.2 58L45.5 45C46.2 42.5 49 43.3 48.3 45.8L45 61L49.5 55C51 53 53.3 54.8 51.8 56.8L44 69L45.5 78" fill="#FFFFFF" stroke="#0C0C0C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>
+            <path d="M23 55C21 49 22 43 25 39" stroke="#0C0C0C" stroke-width="2" stroke-linecap="round"/>
+            <path d="M18 53C16.5 48 17.5 43 20 40" stroke="#0C0C0C" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+
+        <!-- LATEST DAY HIGHLIGHT STRIP (SINGLE ITEM + TOTAL PILL + PREV/NEXT) -->
+        <div class="order-2 flex items-center gap-2.5">
+          <div class="flex-1 rounded-[20px] soft-card px-4 py-3.5 flex items-center justify-between gap-3 min-w-0">
+            <div class="flex items-center gap-3 min-w-0">
+              <div id="latestDayNumBadge" class="w-11 h-11 rounded-2xl bg-white flex items-center justify-center font-black text-sm text-[#0C0C0C] shrink-0 shadow-2xs">
+                16
+              </div>
+              <div class="min-w-0">
+                <div id="latestDayTitle" class="text-xs sm:text-sm font-extrabold text-[#0C0C0C] truncate">
+                  16-Nov-2026
+                </div>
+                <div id="latestDaySubtitle" class="text-[11px] font-medium text-[#6B7280] truncate">
+                  PK $1,82 • CS $2,05
+                </div>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2.5 shrink-0">
+              <!-- Circular Progress Ring Toward $100 AdSense Threshold -->
+              <div class="relative w-10 h-10 flex items-center justify-center shrink-0" title="Progres ambang pencairan $100 AdSense">
+                <svg class="w-10 h-10 -rotate-90" viewBox="0 0 36 36">
+                  <circle cx="18" cy="18" r="14" fill="none" stroke="#E5E7EB" stroke-width="3"></circle>
+                  <circle id="latestProgressCircle" cx="18" cy="18" r="14" fill="none" stroke="#0C0C0C" stroke-width="3" stroke-dasharray="88" stroke-dashoffset="30" stroke-linecap="round"></circle>
+                </svg>
+                <span id="latestProgressPctText" class="text-[9px] font-extrabold text-[#0C0C0C]">67%</span>
+              </div>
+
+              <!-- Total Nominal Pill for Selected/Latest Day -->
+              <span id="latestDayTotalPill" class="px-4 py-2 rounded-full bg-[#0C0C0C] text-white text-xs font-extrabold">
+                $3,87
+              </span>
+            </div>
+          </div>
+
+          <!-- Circular Prev / Next Day Navigation Buttons -->
+          <button id="prevSelectedDayBtn" title="Tanggal Sebelumnya" class="w-10 h-10 rounded-full border border-[#D1D5DB] hover:border-[#0C0C0C] bg-white text-[#0C0C0C] flex items-center justify-center shrink-0 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <button id="nextSelectedDayBtn" title="Tanggal Berikutnya" class="w-10 h-10 rounded-full border border-[#D1D5DB] hover:border-[#0C0C0C] bg-white text-[#0C0C0C] flex items-center justify-center shrink-0 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+          </button>
+        </div>
+
+        <!-- KALENDER GOOGLE ADSENSE CARD -->
+        <div id="adsenseCalendarCard" class="order-6 lg:order-3 rounded-[24px] soft-card p-5 sm:p-6">
+          <div class="flex items-start justify-between gap-3 mb-4">
+            <div>
+              <div class="flex flex-wrap items-center gap-2">
+                <h2 class="text-base sm:text-lg font-extrabold text-[#0C0C0C]">Kalender Google AdSense</h2>
+                <span class="px-2.5 py-0.5 rounded-full bg-[#0C0C0C] text-white text-[10px] font-bold">Min. $100</span>
+              </div>
+              <p id="adsenseSelectedDesc" class="text-xs font-medium text-[#6B7280] mt-1">
+                Dipilih: 20 Nov 2026 • Batas perubahan info &amp; cek ambang $100.
+              </p>
+            </div>
+
+            <div class="flex items-center gap-1.5 shrink-0">
+              <button id="prevCalBtn" class="w-8 h-8 rounded-full bg-white hover:bg-[#E5E7EB] text-[#0C0C0C] flex items-center justify-center text-xs font-bold transition">&lt;</button>
+              <span id="calMonthLabel" class="px-3 py-1.5 rounded-full bg-white text-xs font-extrabold text-[#0C0C0C]">Nov 2026</span>
+              <button id="nextCalBtn" class="w-8 h-8 rounded-full bg-white hover:bg-[#E5E7EB] text-[#0C0C0C] flex items-center justify-center text-xs font-bold transition">&gt;</button>
+            </div>
+          </div>
+
+          <!-- Weekday Headers -->
+          <div class="grid grid-cols-7 gap-1.5 text-center text-[10px] font-extrabold text-[#9CA3AF] mb-2">
+            <span>SEN</span>
+            <span>SEL</span>
+            <span>RAB</span>
+            <span>KAM</span>
+            <span>JUM</span>
+            <span>SAB</span>
+            <span>MIN</span>
+          </div>
+
+          <!-- Calendar Days Grid -->
+          <div id="adsenseCalendarGrid" class="grid grid-cols-7 gap-1.5">
+            <!-- Diisi dinamis oleh JS -->
+          </div>
+
+          <!-- AdSense Cycle Pills + Salin Laporan -->
+          <div class="flex flex-wrap items-center gap-2 mt-4 pt-3 border-t border-[#E5E7EB]">
+            <button data-adsense-jump="3" class="adsense-pill-btn px-3 py-1.5 rounded-full bg-white hover:bg-[#0C0C0C] text-[#0C0C0C] hover:text-white text-[11px] font-bold border border-[#E5E7EB] transition">
+              Tgl 3: Finalisasi
+            </button>
+            <button data-adsense-jump="20" class="adsense-pill-btn px-3 py-1.5 rounded-full bg-white hover:bg-[#0C0C0C] text-[#0C0C0C] hover:text-white text-[11px] font-bold border border-[#E5E7EB] transition">
+              Tgl 20: Cek $100
+            </button>
+            <button data-adsense-jump="21" class="adsense-pill-btn px-3 py-1.5 rounded-full bg-[#0C0C0C] text-white text-[11px] font-bold transition">
+              Tgl 21–26: Cair
+            </button>
+            <button id="copyReportBtn" class="px-3.5 py-1.5 rounded-full bg-[#0C0C0C] hover:bg-neutral-800 text-white text-[11px] font-bold transition ml-auto">
+              Salin Laporan
+            </button>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- =================================================================== -->
+      <!-- RIGHT COLUMN: SEARCH + 2 KPI BOXES + YOUR STATISTICS + DAILY REV    -->
+      <!-- =================================================================== -->
+      <div id="rightColumnSection" class="contents lg:flex lg:w-[46%] lg:flex-col lg:space-y-5 lg:min-w-0">
+
+        <!-- TOP SEARCH BAR + NOTIFICATION BELL + CURRENCY TOGGLE -->
+        <div class="order-3 lg:order-1 flex items-center gap-2.5">
+          <div class="relative flex-1">
+            <svg class="w-4 h-4 text-[#0C0C0C] absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/></svg>
+            <input
+              type="text"
+              id="searchInput"
+              placeholder="Cari tanggal atau nominal..."
+              class="w-full pl-10 pr-4 py-2.5 rounded-xl soft-card text-xs font-medium text-[#0C0C0C] placeholder-[#9CA3AF] focus:outline-none focus:ring-1 focus:ring-[#0C0C0C]"
+            />
+          </div>
+
+          <button id="syncBellBtn" title="Status Sinkronisasi Live" class="relative w-10 h-10 rounded-full hover:bg-[#F5F6F8] flex items-center justify-center shrink-0 transition">
+            <svg class="w-5 h-5 text-[#0C0C0C]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.9" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+            <span id="notifCountBadge" class="absolute top-1 right-1 min-w-[16px] h-[16px] px-1 rounded-full bg-[#EF4444] text-white text-[9px] font-extrabold flex items-center justify-center">16</span>
+          </button>
+
+          <button id="currencyToggleBtn" title="Ganti Mata Uang (USD / IDR)" class="px-3 h-9 rounded-full bg-[#0C0C0C] text-white text-xs font-extrabold flex items-center gap-1 shrink-0 transition">
+            <span id="currencySymbolText">$</span>
+          </button>
+        </div>
+
+        <!-- 2 BIG KPI BOXES ("Total Bulan ini" & "Estimasi Akhir bulan") -->
+        <div class="order-4 lg:order-2 grid grid-cols-2 gap-3.5">
+          <div class="rounded-[20px] soft-card px-4 py-4 sm:px-5 sm:py-5 flex items-center justify-between gap-2">
+            <div id="kpiTotalBulan" class="text-2xl sm:text-[30px] font-black tracking-tight text-[#0C0C0C]">
+              $67,34
+            </div>
+            <div class="text-[11px] font-semibold text-[#4B5563] leading-tight text-right">
+              Total<br/>Bulan ini
+            </div>
+          </div>
+
+          <div class="rounded-[20px] soft-card px-4 py-4 sm:px-5 sm:py-5 flex items-center justify-between gap-2">
+            <div id="kpiEstAkhir" class="text-2xl sm:text-[30px] font-black tracking-tight text-[#0C0C0C]">
+              $126,26
+            </div>
+            <div class="text-[11px] font-semibold text-[#4B5563] leading-tight text-right">
+              Estimasi<br/>Akhir bulan
+            </div>
+          </div>
+        </div>
+
+        <!-- YOUR STATISTICS (WAVE LINE CHART WITH FLOATING PILLS) -->
+        <div class="order-5 lg:order-3">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="text-lg sm:text-xl font-extrabold text-[#0C0C0C]">Your statistics</h2>
+            <span id="liveSyncTinyTag" class="text-[11px] font-semibold text-[#6B7280]">Live • Sheet Revenue</span>
+          </div>
+
+          <div class="flex items-center justify-between gap-2 mb-3">
+            <div class="flex items-center gap-5 text-xs">
+              <button data-stat-tab="trend" class="stat-tab-btn font-bold text-[#0C0C0C] transition">Tren Harian</button>
+              <button data-stat-tab="channels" class="stat-tab-btn font-semibold text-[#9CA3AF] hover:text-[#0C0C0C] transition">Per Channel</button>
+            </div>
+            <span id="statsMonthTag" class="px-3 py-1 rounded-full soft-card text-[11px] font-bold text-[#0C0C0C]">Nov 2026</span>
+          </div>
+
+          <!-- Trend Wave SVG Container -->
+          <div id="trendChartContainer" class="w-full overflow-hidden">
+            <svg id="editorialWaveSvg" class="w-full h-[185px] overflow-visible" viewBox="0 0 460 185">
+              <!-- Diisi dinamis oleh JS -->
+            </svg>
+          </div>
+
+          <!-- Channel Comparison Container (Hidden by default) -->
+          <div id="channelSplitContainer" class="hidden rounded-[20px] soft-card p-4 space-y-3">
+            <div>
+              <div class="flex items-center justify-between text-xs font-bold mb-1">
+                <span>Ceria Space</span>
+                <span id="splitCeriaText">$37,17 (55.2%)</span>
+              </div>
+              <div class="w-full h-2.5 rounded-full bg-white overflow-hidden">
+                <div id="splitCeriaBar" class="h-full bg-[#0C0C0C] rounded-full" style="width: 55.2%"></div>
+              </div>
+            </div>
+            <div>
+              <div class="flex items-center justify-between text-xs font-bold mb-1">
+                <span>Pinkymon</span>
+                <span id="splitPinkyText">$30,17 (44.8%)</span>
+              </div>
+              <div class="w-full h-2.5 rounded-full bg-white overflow-hidden">
+                <div id="splitPinkyBar" class="h-full bg-[#6B7280] rounded-full" style="width: 44.8%"></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- DAILY REVENUE (DITEMPATKAN TEPAT SETELAH GRAFIK YOUR STATISTICS & AUTO-SCROLL BAWAH) -->
+        <div id="dailyRevenueSection" class="order-5 lg:order-4 flex-1 flex flex-col min-h-0">
+          <div class="flex items-center justify-between mb-2">
+            <h2 class="text-lg sm:text-xl font-extrabold text-[#0C0C0C]">Daily Revenue</h2>
+            <span id="dailyCountHeader" class="text-[11px] font-semibold text-[#6B7280]">16 hari tercatat</span>
+          </div>
+
+          <!-- Filter Tabs -->
+          <div class="flex items-center gap-4 overflow-x-auto slim-scroll pb-2 mb-2.5 border-b border-[#F3F4F6] text-xs">
+            <button data-filter="all" class="tab-filter-btn font-bold text-[#0C0C0C] whitespace-nowrap transition">Semua Hari</button>
+            <button data-filter="pinkymon" class="tab-filter-btn font-semibold text-[#9CA3AF] hover:text-[#0C0C0C] whitespace-nowrap transition">Pinkymon Unggul</button>
+            <button data-filter="ceria" class="tab-filter-btn font-semibold text-[#9CA3AF] hover:text-[#0C0C0C] whitespace-nowrap transition">Ceria Space Unggul</button>
+            <button data-filter="high" class="tab-filter-btn font-semibold text-[#9CA3AF] hover:text-[#0C0C0C] whitespace-nowrap transition">Tertinggi (&gt;$4,20)</button>
+          </div>
+
+          <!-- Scrollable List of Daily Cards (Automatically scrolls to the bottom/latest) -->
+          <div id="dailyListContainer" class="space-y-2.5 max-h-[340px] overflow-y-auto slim-scroll pr-1">
+            <!-- Diisi dinamis oleh JS -->
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SLIDE 2: CEK VIDEO TERJADWAL (Cer** Spa** & Pin*y**on)                -->
+    <!-- ===================================================================== -->
+    <div id="scheduleSlideView" class="hidden flex-1 flex-col space-y-5 min-w-0">
+
+      <!-- TOP HEADER ROW: BACK TO DASHBOARD + SEARCH -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <button id="backToRevenueBtn" class="w-10 h-10 rounded-full border border-[#D1D5DB] hover:border-[#0C0C0C] bg-white text-[#0C0C0C] flex items-center justify-center transition shrink-0" title="Kembali ke Dashboard Revenue">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <div>
+            <div class="flex items-center gap-2">
+              <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-[#0C0C0C]">Cek Jadwal Video</h1>
+              <span class="px-2.5 py-0.5 rounded-full bg-[#0C0C0C] text-white text-[10px] font-bold">Target 4 Video/Hari</span>
+            </div>
+            <p class="text-xs font-medium text-[#6B7280]">Audit otomatis slot video terjadwal &amp; deteksi hari yang belum lengkap 4 konten.</p>
+          </div>
+        </div>
+
+        <!-- Search Input in Schedule Slide -->
+        <div class="relative w-full sm:w-64">
+          <svg class="w-4 h-4 text-[#0C0C0C] absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/></svg>
+          <input
+            type="text"
+            id="scheduleSearchInput"
+            placeholder="Cari hari, tanggal, judul..."
+            class="w-full pl-10 pr-4 py-2.5 rounded-xl soft-card text-xs font-medium text-[#0C0C0C] placeholder-[#9CA3AF] focus:outline-none focus:ring-1 focus:ring-[#0C0C0C]"
+          />
+        </div>
+      </div>
+
+      <!-- CHANNEL TABS SWITCHER ("Cer** Spa**" & "Pin*y**on") + COPY AUDIT BUTTON -->
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="inline-flex p-1.5 rounded-[18px] soft-card gap-1.5">
+          <button data-sched-channel="Cer** Spa**" class="sched-channel-tab px-4 py-2 rounded-xl bg-[#0C0C0C] text-white text-xs font-extrabold flex items-center gap-2 transition">
+            <span>Cer** Spa**</span>
+            <span id="badgeIncompleteCeria" class="px-1.5 py-0.5 rounded-full bg-[#EF4444] text-white text-[10px] font-black">3</span>
+          </button>
+          <button data-sched-channel="Pin*y**on" class="sched-channel-tab px-4 py-2 rounded-xl text-[#4B5563] hover:text-[#0C0C0C] text-xs font-bold flex items-center gap-2 transition">
+            <span>Pin*y**on</span>
+            <span id="badgeIncompletePinky" class="px-1.5 py-0.5 rounded-full bg-[#EF4444] text-white text-[10px] font-black">2</span>
+          </button>
+        </div>
+
+        <button id="copyScheduleAuditBtn" class="px-4 py-2.5 rounded-full bg-[#0C0C0C] hover:bg-neutral-800 text-white text-xs font-bold transition">
+          Salin Daftar Hari Kurang
+        </button>
+      </div>
+
+      <!-- 3 SUMMARY STAT CARDS FOR ACTIVE SCHEDULE TAB -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
+        <div class="rounded-[18px] soft-card px-5 py-4 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] font-semibold text-[#6B7280]">Total Video Terjadwal</div>
+            <div id="schedTotalVideosStat" class="text-2xl sm:text-[28px] font-black text-[#0C0C0C] mt-0.5">41 Video</div>
+          </div>
+          <div id="schedSlotPatternTag" class="px-3 py-1.5 rounded-xl bg-white text-[10px] font-bold text-[#0C0C0C] border border-[#E5E7EB]">
+            4 Slot/Hari
+          </div>
+        </div>
+
+        <div class="rounded-[18px] soft-card px-5 py-4 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] font-semibold text-[#6B7280]">Hari Lengkap (4/4)</div>
+            <div id="schedCompleteDaysStat" class="text-2xl sm:text-[28px] font-black text-[#0C0C0C] mt-0.5">9 Hari</div>
+          </div>
+          <span class="px-3 py-1.5 rounded-full bg-white text-[11px] font-extrabold text-[#0C0C0C] border border-[#E5E7EB]">Aman</span>
+        </div>
+
+        <div class="rounded-[18px] bg-[#0C0C0C] text-white px-5 py-4 flex items-center justify-between">
+          <div>
+            <div class="text-[11px] font-semibold text-white/70">Hari Belum Lengkap (&lt;4)</div>
+            <div id="schedIncompleteDaysStat" class="text-2xl sm:text-[28px] font-black text-white mt-0.5">3 Hari</div>
+          </div>
+          <span id="schedMissingVideosCountBadge" class="px-3 py-1.5 rounded-full bg-[#EF4444] text-white text-[11px] font-extrabold">
+            -7 Video
+          </span>
+        </div>
+      </div>
+
+      <!-- HIGHLIGHT ALERT BANNER: HARI YANG KONTENNYA TIDAK LENGKAP 4 VIDEO -->
+      <div id="incompleteAlertBox" class="rounded-[20px] soft-card border border-[#E5E7EB] p-4 sm:p-5">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-[#EF4444]"></span>
+            <h2 id="incompleteAlertHeading" class="text-sm sm:text-base font-extrabold text-[#0C0C0C]">
+              Hari Tidak Lengkap 4 Video — Cer** Spa**
+            </h2>
+          </div>
+          <span id="incompleteSlotRuleHint" class="text-[11px] font-semibold text-[#6B7280]">
+            Jam tayang standar: 00:00, 04:00, 18:00, 22:00 WIB
+          </span>
+        </div>
+
+        <div id="incompleteDaysCardsGrid" class="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+          <!-- Diisi dinamis oleh JS -->
+        </div>
+      </div>
+
+      <!-- FILTER TABS & DAILY SCHEDULE SLOT BREAKDOWN -->
+      <div class="flex-1 flex flex-col min-h-0">
+        <div class="flex items-center justify-between gap-3 pb-2.5 mb-3 border-b border-[#F3F4F6]">
+          <div class="flex items-center gap-5 overflow-x-auto slim-scroll text-xs">
+            <button data-sched-filter="all" class="sched-filter-btn font-bold text-[#0C0C0C] whitespace-nowrap transition">
+              Semua Tanggal
+            </button>
+            <button data-sched-filter="incomplete" class="sched-filter-btn font-semibold text-[#9CA3AF] hover:text-[#0C0C0C] whitespace-nowrap transition">
+              Hanya Kurang (&lt;4 Video)
+            </button>
+            <button data-sched-filter="complete" class="sched-filter-btn font-semibold text-[#9CA3AF] hover:text-[#0C0C0C] whitespace-nowrap transition">
+              Sudah Lengkap (4/4)
+            </button>
+          </div>
+          <span id="schedRenderedDaysLabel" class="text-[11px] font-semibold text-[#6B7280] shrink-0">12 hari ditampilkan</span>
+        </div>
+
+        <div id="scheduleDailyCardsContainer" class="space-y-3 max-h-[460px] overflow-y-auto slim-scroll pr-1">
+          <!-- Diisi dinamis oleh JS -->
+        </div>
+      </div>
+
+    </div>
+
+    <!-- ===================================================================== -->
+    <!-- SLIDE 3: PENJADWALAN VIDEO & DATA LOGS (CERIA SPACE & PINKYMON)       -->
+    <!-- ===================================================================== -->
+    <div id="automationSlideView" class="hidden flex-1 flex-col space-y-5 min-w-0">
+
+      <!-- TOP HEADER ROW: BACK BUTTON + TITLE + BUKA SHEET + SETUP WEBHOOK -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-3">
+          <button id="backFromAutomationBtn" class="w-10 h-10 rounded-full border border-[#D1D5DB] hover:border-[#0C0C0C] bg-white text-[#0C0C0C] flex items-center justify-center transition shrink-0" title="Kembali ke Dashboard Utama">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/></svg>
+          </button>
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-[#0C0C0C]">Penjadwalan Video</h1>
+              <span id="automationSheetBadge" class="px-2.5 py-0.5 rounded-full bg-[#0C0C0C] text-white text-[10px] font-bold">ceria space • Tab Logs</span>
+            </div>
+            <p class="text-xs font-medium text-[#6B7280]">Kontrol checkbox eksekusi sel E5:F8 &amp; pemantauan live debug log penjadwalan YouTube.</p>
+          </div>
+        </div>
+
+        <div class="flex flex-wrap items-center gap-2 shrink-0">
+          <a
+            id="openAutomationSheetLink"
+            href="https://docs.google.com/spreadsheets/d/12nXdPMal-HdMO7ycbrLMyOXe45RJufEnpvtO83s6S0M/edit?usp=drivesdk"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="px-3.5 py-2.5 rounded-full border border-[#D1D5DB] hover:border-[#0C0C0C] bg-white text-[#0C0C0C] text-xs font-bold flex items-center gap-1.5 transition"
+          >
+            <span>Buka Sheet</span>
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 3h7m0 0v7m0-7L10 14M5 5H3v16h16v-2"/></svg>
+          </a>
+
+          <button id="openWebhookModalBtn" class="px-4 py-2.5 rounded-full bg-[#0C0C0C] hover:bg-neutral-800 text-white text-xs font-bold flex items-center gap-2 transition">
+            <span id="webhookStatusDot" class="w-2 h-2 rounded-full bg-amber-400"></span>
+            <span>Setup Webhook</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- CHANNEL TABS SWITCHER ("Ceria Space" & "Pinkymon") -->
+      <div class="flex flex-wrap items-center justify-between gap-3">
+        <div class="inline-flex p-1.5 rounded-[18px] soft-card gap-1.5">
+          <button data-auto-channel="ceria" class="auto-channel-tab px-4 py-2 rounded-xl bg-[#0C0C0C] text-white text-xs font-extrabold flex items-center gap-2 transition">
+            <span>Ceria Space</span>
+            <span id="badgeAutoLogsCeria" class="px-1.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-black">6</span>
+          </button>
+          <button data-auto-channel="pinkymon" class="auto-channel-tab px-4 py-2 rounded-xl text-[#4B5563] hover:text-[#0C0C0C] text-xs font-bold flex items-center gap-2 transition">
+            <span>Pinkymon</span>
+            <span id="badgeAutoLogsPinky" class="px-1.5 py-0.5 rounded-full bg-[#E5E7EB] text-[#0C0C0C] text-[10px] font-black">4</span>
+          </button>
+        </div>
+
+        <span id="automationActiveSheetCaption" class="text-[11px] font-semibold text-[#6B7280]">
+          Spreadsheet: ceria space • Sel Checkbox E5:F8
+        </span>
+      </div>
+
+      <!-- PANEL KONTROL CHECKBOX SPREADSHEET (SEL E5:F8) -->
+      <div class="rounded-[20px] soft-card p-4 sm:p-5 border border-[#E5E7EB]">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3.5">
+          <div>
+            <div class="flex items-center gap-2">
+              <h2 class="text-sm sm:text-base font-extrabold text-[#0C0C0C]">Kontrol Checkbox Spreadsheet (Sel E5:F8)</h2>
+              <span id="webhookConnectionBadge" class="px-2.5 py-0.5 rounded-full bg-white border border-[#D1D5DB] text-[10px] font-bold text-[#0C0C0C]">
+                Preview Lokal
+              </span>
+            </div>
+            <p class="text-[11px] font-medium text-[#6B7280] mt-0.5">
+              Centang aksi yang diinginkan lalu kirim untuk memicu skrip pada tab <strong class="text-[#0C0C0C]">Logs</strong>.
+            </p>
+          </div>
+
+          <button id="sendCheckboxesToSheetBtn" class="px-4 py-2.5 rounded-full bg-[#0C0C0C] hover:bg-neutral-800 text-white text-xs font-extrabold flex items-center gap-2 transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.1" d="M22 2L11 13M22 2l-7 20-4-9-9-4 20-7z"/></svg>
+            <span>Kirim Centang ke Spreadsheet</span>
+          </button>
+        </div>
+
+        <div id="automationCheckboxesGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Diisi dinamis oleh JS -->
+        </div>
+      </div>
+
+      <!-- PANEL MASTER CONTROL (TAB: Master Control • AUTO-READ & AUTO-WRITE) -->
+      <div class="rounded-[20px] soft-card p-4 sm:p-5 border border-[#E5E7EB]">
+        <div class="flex flex-wrap items-center justify-between gap-3 mb-3.5">
+          <div>
+            <div class="flex flex-wrap items-center gap-2">
+              <h2 class="text-sm sm:text-base font-extrabold text-[#0C0C0C]">Master Control (Tab: Master Control)</h2>
+              <span id="masterControlSyncBadge" class="px-2.5 py-0.5 rounded-full bg-white border border-[#D1D5DB] text-[10px] font-bold text-[#0C0C0C]">
+                Auto-Sync Aktif
+              </span>
+            </div>
+            <p class="text-[11px] font-medium text-[#6B7280] mt-0.5">
+              Edit judul, deskripsi, atau lokasi video di bawah — perubahan otomatis tersimpan ke spreadsheet <strong id="masterControlSheetNameHint" class="text-[#0C0C0C]">ceria space</strong>.
+            </p>
+          </div>
+
+          <button id="saveAllMasterControlBtn" class="px-4 py-2 rounded-full bg-[#0C0C0C] hover:bg-neutral-800 text-white text-xs font-extrabold transition">
+            Simpan Semua ke Sheet
+          </button>
+        </div>
+
+        <div id="masterControlFieldsGrid" class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          <!-- Diisi dinamis oleh JS -->
+        </div>
+      </div>
+
+      <!-- PANEL DATA LOGS (KOLOM A: WAKTU WIB, KOLOM B: AKTIVITAS / FUNGSI, KOLOM C: DETAIL DEBUG) -->
+      <div class="flex-1 flex flex-col min-h-0">
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 mb-2.5">
+          <div class="flex flex-wrap items-center gap-2">
+            <h2 class="text-lg font-extrabold text-[#0C0C0C]">Data Logs</h2>
+            <span id="automationLogCountBadge" class="px-2.5 py-0.5 rounded-full soft-card text-[11px] font-bold text-[#0C0C0C]">6 log</span>
+            <span class="px-2 py-0.5 rounded-md bg-[#F5F6F8] text-[10px] font-bold text-[#4B5563]">Terbaru di Atas</span>
+            <span id="automationLogsSyncTime" class="text-[10px] font-semibold text-[#6B7280]">Tab Logs • Live</span>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <div class="relative flex-1 sm:w-52">
+              <svg class="w-3.5 h-3.5 text-[#0C0C0C] absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-4.35-4.35M17 11A6 6 0 115 11a6 6 0 0112 0z"/></svg>
+              <input
+                type="text"
+                id="logSearchInput"
+                placeholder="Cari waktu, fungsi, detail..."
+                class="w-full pl-9 pr-3 py-2 rounded-xl soft-card text-xs font-medium text-[#0C0C0C] placeholder-[#9CA3AF] focus:outline-none focus:ring-1 focus:ring-[#0C0C0C]"
+              />
+            </div>
+
+            <button id="copyAutomationLogsBtn" class="px-3.5 py-2 rounded-full border border-[#D1D5DB] hover:border-[#0C0C0C] bg-white text-[#0C0C0C] text-xs font-bold shrink-0 transition">
+              Salin Logs
+            </button>
+
+            <button id="clearAutomationLogsBtn" class="px-3.5 py-2 rounded-full bg-[#0C0C0C] hover:bg-neutral-800 text-white text-xs font-bold flex items-center gap-1.5 shrink-0 transition">
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+              <span id="clearAutomationLogsBtnLabel">Hapus Logs</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Filter Tabs -->
+        <div class="flex items-center gap-5 overflow-x-auto slim-scroll pb-2 mb-3 border-b border-[#F3F4F6] text-xs">
+          <button data-log-filter="all" class="log-filter-btn font-bold text-[#0C0C0C] whitespace-nowrap transition">
+            Semua Log
+          </button>
+          <button data-log-filter="cek" class="log-filter-btn font-semibold text-[#9CA3AF] hover:text-[#0C0C0C] whitespace-nowrap transition">
+            Cek Slot
+          </button>
+          <button data-log-filter="tarik" class="log-filter-btn font-semibold text-[#9CA3AF] hover:text-[#0C0C0C] whitespace-nowrap transition">
+            Tarik Video
+          </button>
+          <button data-log-filter="jadwal" class="log-filter-btn font-semibold text-[#9CA3AF] hover:text-[#0C0C0C] whitespace-nowrap transition">
+            Jadwal &amp; Update
+          </button>
+        </div>
+
+        <!-- Scrollable Log Cards List (Terbaru di Paling Atas) -->
+        <div id="automationLogsListContainer" class="space-y-2.5 max-h-[420px] overflow-y-auto slim-scroll pr-1">
+          <!-- Diisi dinamis oleh JS -->
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    // =========================================================================
+    // 1. KONFIGURASI SPREADSHEET & DATA AWAL (DATA YOUTUBE — SHEET: REVENUE)
+    // =========================================================================
+    const SPREADSHEET_ID = '1Q-lgqDTrwDqDIF1y9OJg80KmJ_8TLh5EVIdjptVITGI';
+    const SHEET_NAME = 'Revenue';
+    const AUTOMATION_CHANNELS = {
+      ceria: {
+        key: 'ceria',
+        name: 'Ceria Space',
+        sheetLabel: 'ceria space',
+        spreadsheetId: '12nXdPMal-HdMO7ycbrLMyOXe45RJufEnpvtO83s6S0M',
+        sheetUrl: 'https://docs.google.com/spreadsheets/d/12nXdPMal-HdMO7ycbrLMyOXe45RJufEnpvtO83s6S0M/edit?usp=drivesdk',
+        webhookStorageKey: 'yt_ceria_automation_webhook_url'
+      },
+      pinkymon: {
+        key: 'pinkymon',
+        name: 'Pinkymon',
+        sheetLabel: 'pinkymon',
+        spreadsheetId: '1DXkJTlj20b2sQuExHApAMVPTsdjn8qklfNRRuU96T3Y',
+        sheetUrl: 'https://docs.google.com/spreadsheets/d/1DXkJTlj20b2sQuExHApAMVPTsdjn8qklfNRRuU96T3Y/edit?usp=drivesdk',
+        webhookStorageKey: 'yt_pinkymon_automation_webhook_url'
+      }
+    };
+    const AUTOMATION_SHEET_NAME = 'Logs';
+    const MASTER_CONTROL_SHEET_NAME = 'Master Control';
+    const SCHEDULE_TABS = {
+      CERIA: 'Cer** Spa**',
+      PINKY: 'Pin*y**on'
+    };
+    const IDR_RATE = 16000;
+
+    // Data Awal Pendapatan Harian (Tab Revenue: 1-Nov-2026 s.d. 16-Nov-2026)
+    const DEFAULT_REVENUE_DATA = [
+      { tanggal: '1-Nov-2026', pinkymon: 2.41, ceria: 1.95, total: 4.35 },
+      { tanggal: '2-Nov-2026', pinkymon: 2.68, ceria: 2.21, total: 4.89 },
+      { tanggal: '3-Nov-2026', pinkymon: 1.51, ceria: 2.76, total: 4.27 },
+      { tanggal: '4-Nov-2026', pinkymon: 1.55, ceria: 2.99, total: 4.54 },
+      { tanggal: '5-Nov-2026', pinkymon: 1.44, ceria: 2.18, total: 3.63 },
+      { tanggal: '6-Nov-2026', pinkymon: 1.70, ceria: 2.69, total: 4.40 },
+      { tanggal: '7-Nov-2026', pinkymon: 1.61, ceria: 2.51, total: 4.12 },
+      { tanggal: '8-Nov-2026', pinkymon: 1.78, ceria: 2.31, total: 4.09 },
+      { tanggal: '9-Nov-2026', pinkymon: 1.95, ceria: 2.29, total: 4.24 },
+      { tanggal: '10-Nov-2026', pinkymon: 2.05, ceria: 2.09, total: 4.14 },
+      { tanggal: '11-Nov-2026', pinkymon: 1.95, ceria: 1.99, total: 3.93 },
+      { tanggal: '12-Nov-2026', pinkymon: 2.34, ceria: 1.86, total: 4.19 },
+      { tanggal: '13-Nov-2026', pinkymon: 1.58, ceria: 2.72, total: 4.30 },
+      { tanggal: '14-Nov-2026', pinkymon: 1.95, ceria: 2.39, total: 4.33 },
+      { tanggal: '15-Nov-2026', pinkymon: 1.88, ceria: 2.19, total: 4.07 },
+      { tanggal: '16-Nov-2026', pinkymon: 1.82, ceria: 2.05, total: 3.87 }
+    ];
+
+    let revenueData = DEFAULT_REVENUE_DATA.map((item) => ({ ...item }));
+    let selectedDayIndex = revenueData.length - 1;
+    let currencyMode = 'USD';
+    let activeFilter = 'all';
+    let searchQuery = '';
+    let activeStatTab = 'trend';
+    let calYear = 2026;
+    let calMonth = 10; // November (0-indexed)
+    let selectedCalendarDay = 20;
+    let autoSyncMs = 120000;
+    let autoSyncTimer = null;
+
+    // Data Jadwal Video Awal sesuai tab "Cer** Spa**" & "Pin*y**on"
+    const DEFAULT_SCHEDULE_DATA = {
+      'Cer** Spa**': [
+        { no: 1, hari: 'Kamis', tanggal: '19-11-2026', jam: '00:00 WIB', jenis: 'Shorts', judul: 'Barely slipping past the deadliest Nextbots...' },
+        { no: 2, hari: 'Kamis', tanggal: '19-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'Finn and Jake and Nextbots cornered me...' },
+        { no: 3, hari: 'Kamis', tanggal: '19-11-2026', jam: '18:00 WIB', jenis: 'Shorts', judul: 'One tiny hesitation and these Nextbots...' },
+        { no: 4, hari: 'Kamis', tanggal: '19-11-2026', jam: '22:00 WIB', jenis: 'Shorts', judul: 'Surviving 15 seconds against Finn and Jake...' },
+        { no: 5, hari: 'Jumat', tanggal: '20-11-2026', jam: '00:00 WIB', jenis: 'Shorts', judul: 'Maximum heart attack energy in this Nextbot run...' },
+        { no: 6, hari: 'Jumat', tanggal: '20-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'Finn and Jake joined the Nextbots to stop me...' },
+        { no: 7, hari: 'Jumat', tanggal: '20-11-2026', jam: '18:00 WIB', jenis: 'Shorts', judul: 'I forgot how to breathe during this Nextbot chase...' },
+        { no: 8, hari: 'Jumat', tanggal: '20-11-2026', jam: '22:00 WIB', jenis: 'Shorts', judul: 'Finn and Jake teamed up with Nextbots...' },
+        { no: 9, hari: 'Sabtu', tanggal: '21-11-2026', jam: '00:00 WIB', jenis: 'Shorts', judul: 'The most stressful 15-second Nextbot escape...' },
+        { no: 10, hari: 'Sabtu', tanggal: '21-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'I gasped for air escaping Finn and Jake...' },
+        { no: 11, hari: 'Sabtu', tanggal: '21-11-2026', jam: '18:00 WIB', jenis: 'Shorts', judul: 'My soul literally left my body during this...' },
+        { no: 12, hari: 'Sabtu', tanggal: '21-11-2026', jam: '22:00 WIB', jenis: 'Shorts', judul: 'Finn and Jake and 50 Nextbots chased me...' },
+        { no: 13, hari: 'Minggu', tanggal: '22-11-2026', jam: '00:00 WIB', jenis: 'Shorts', judul: 'Surviving 7 seconds against 100 max Nextbots...' },
+        { no: 14, hari: 'Minggu', tanggal: '22-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'Finn and Jake joined the Nextbot horde...' },
+        { no: 15, hari: 'Minggu', tanggal: '22-11-2026', jam: '18:00 WIB', jenis: 'Shorts', judul: 'I almost threw my mouse across the room...' },
+        { no: 16, hari: 'Minggu', tanggal: '22-11-2026', jam: '22:00 WIB', jenis: 'Shorts', judul: 'I almost lost my sanity fleeing Finn and Jake...' },
+        { no: 17, hari: 'Senin', tanggal: '23-11-2026', jam: '00:00 WIB', jenis: 'Shorts', judul: "The most brutal Nextbot jumpscare I've seen..." },
+        { no: 18, hari: 'Senin', tanggal: '23-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'Finn and Jake joined the Nextbots to trap me...' },
+        { no: 19, hari: 'Senin', tanggal: '23-11-2026', jam: '18:00 WIB', jenis: 'Shorts', judul: 'Zero warning before this Nextbot horde...' },
+        { no: 20, hari: 'Senin', tanggal: '23-11-2026', jam: '22:00 WIB', jenis: 'Shorts', judul: "Finn and Jake's Nextbot squad caught me..." },
+        { no: 21, hari: 'Selasa', tanggal: '24-11-2026', jam: '00:00 WIB', jenis: 'Shorts', judul: 'Nobody is surviving this insane Nextbot...' },
+        { no: 22, hari: 'Selasa', tanggal: '24-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'Squidward teamed up with Nextbots to...' },
+        { no: 23, hari: 'Selasa', tanggal: '24-11-2026', jam: '18:00 WIB', jenis: 'Shorts', judul: 'Pure unadulterated panic running from...' },
+        { no: 24, hari: 'Selasa', tanggal: '24-11-2026', jam: '22:00 WIB', jenis: 'Shorts', judul: 'Surviving 10 seconds against Squidward...' },
+        { no: 25, hari: 'Rabu', tanggal: '25-11-2026', jam: '00:00 WIB', jenis: 'Shorts', judul: 'My mic completely peaked from screaming...' },
+        { no: 26, hari: 'Rabu', tanggal: '25-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'Squidward joined the Nextbot horde to...' },
+        { no: 27, hari: 'Rabu', tanggal: '25-11-2026', jam: '18:00 WIB', jenis: 'Shorts', judul: 'My palms were sweating buckets during...' },
+        { no: 28, hari: 'Rabu', tanggal: '25-11-2026', jam: '22:00 WIB', jenis: 'Shorts', judul: "I barely outran Squidward's insane Nextbot..." },
+        { no: 29, hari: 'Kamis', tanggal: '26-11-2026', jam: '00:00 WIB', jenis: 'Shorts', judul: 'Barely dodging the fastest Nextbot swarm...' },
+        { no: 30, hari: 'Kamis', tanggal: '26-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'Squidward teamed up with Nextbots for...' },
+        { no: 31, hari: 'Kamis', tanggal: '26-11-2026', jam: '18:00 WIB', jenis: 'Shorts', judul: 'One split-second mistake and these Nextbots...' },
+        { no: 32, hari: 'Kamis', tanggal: '26-11-2026', jam: '22:00 WIB', jenis: 'Shorts', judul: 'Squidward and Nextbots cornered me...' },
+        { no: 33, hari: 'Jumat', tanggal: '27-11-2026', jam: '00:00 WIB', jenis: 'Shorts', judul: 'Peak nightmare fuel trying to outrun this...' },
+        { no: 34, hari: 'Jumat', tanggal: '27-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'Surviving 15 seconds against Squidward...' },
+        { no: 35, hari: 'Jumat', tanggal: '27-11-2026', jam: '18:00 WIB', jenis: 'Shorts', judul: 'I held my breath the entire time escaping...' },
+        { no: 36, hari: 'Jumat', tanggal: '27-11-2026', jam: '22:00 WIB', jenis: 'Shorts', judul: 'Squidward joined the Nextbots to stall...' },
+        { no: 37, hari: 'Sabtu', tanggal: '28-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'Squidward teamed up with Nextbots to...' },
+        { no: 38, hari: 'Sabtu', tanggal: '28-11-2026', jam: '22:00 WIB', jenis: 'Shorts', judul: "I gasped for air escaping Squidward's..." },
+        { no: 39, hari: 'Minggu', tanggal: '29-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'Squidward and 50 Nextbots chased me...' },
+        { no: 40, hari: 'Minggu', tanggal: '29-11-2026', jam: '22:00 WIB', jenis: 'Shorts', judul: 'Squidward joined the Nextbot horde for...' },
+        { no: 41, hari: 'Senin', tanggal: '30-11-2026', jam: '04:00 WIB', jenis: 'Shorts', judul: 'I almost lost my sanity fleeing Squidward...' }
+      ],
+      'Pin*y**on': [
+        { no: 1, hari: 'Kamis', tanggal: '19-11-2026', jam: '04:30 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 2, hari: 'Kamis', tanggal: '19-11-2026', jam: '09:00 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 3, hari: 'Kamis', tanggal: '19-11-2026', jam: '13:00 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 4, hari: 'Kamis', tanggal: '19-11-2026', jam: '18:30 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 5, hari: 'Jumat', tanggal: '20-11-2026', jam: '04:30 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 6, hari: 'Jumat', tanggal: '20-11-2026', jam: '09:00 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 7, hari: 'Jumat', tanggal: '20-11-2026', jam: '13:00 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 8, hari: 'Jumat', tanggal: '20-11-2026', jam: '18:30 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 9, hari: 'Sabtu', tanggal: '21-11-2026', jam: '04:30 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 10, hari: 'Sabtu', tanggal: '21-11-2026', jam: '09:00 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 11, hari: 'Sabtu', tanggal: '21-11-2026', jam: '13:00 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 12, hari: 'Sabtu', tanggal: '21-11-2026', jam: '18:30 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 13, hari: 'Minggu', tanggal: '22-11-2026', jam: '04:30 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 14, hari: 'Minggu', tanggal: '22-11-2026', jam: '09:00 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 15, hari: 'Minggu', tanggal: '22-11-2026', jam: '13:00 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 16, hari: 'Minggu', tanggal: '22-11-2026', jam: '18:30 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 17, hari: 'Senin', tanggal: '23-11-2026', jam: '04:30 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 18, hari: 'Senin', tanggal: '23-11-2026', jam: '09:00 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 19, hari: 'Senin', tanggal: '23-11-2026', jam: '13:00 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 20, hari: 'Senin', tanggal: '23-11-2026', jam: '18:30 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 21, hari: 'Selasa', tanggal: '24-11-2026', jam: '04:30 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 22, hari: 'Selasa', tanggal: '24-11-2026', jam: '09:00 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 23, hari: 'Selasa', tanggal: '24-11-2026', jam: '13:00 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 24, hari: 'Selasa', tanggal: '24-11-2026', jam: '18:30 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 25, hari: 'Rabu', tanggal: '25-11-2026', jam: '04:30 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 26, hari: 'Rabu', tanggal: '25-11-2026', jam: '09:00 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 27, hari: 'Rabu', tanggal: '25-11-2026', jam: '13:00 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 28, hari: 'Rabu', tanggal: '25-11-2026', jam: '18:30 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 29, hari: 'Kamis', tanggal: '26-11-2026', jam: '04:30 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 30, hari: 'Kamis', tanggal: '26-11-2026', jam: '09:00 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 31, hari: 'Kamis', tanggal: '26-11-2026', jam: '13:00 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 32, hari: 'Kamis', tanggal: '26-11-2026', jam: '18:30 WIB', jenis: 'Shorts', judul: 'nextbots in playground mod new update...' },
+        { no: 33, hari: 'Jumat', tanggal: '27-11-2026', jam: '04:30 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 34, hari: 'Jumat', tanggal: '27-11-2026', jam: '13:00 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' },
+        { no: 35, hari: 'Sabtu', tanggal: '28-11-2026', jam: '04:30 WIB', jenis: 'Shorts', judul: 'gmod play sandbox in space play nextbots...' }
+      ]
+    };
+
+    const EXPECTED_SLOTS = {
+      'Cer** Spa**': ['00:00 WIB', '04:00 WIB', '18:00 WIB', '22:00 WIB'],
+      'Pin*y**on': ['04:30 WIB', '09:00 WIB', '13:00 WIB', '18:30 WIB']
+    };
+
+    let scheduleData = {
+      'Cer** Spa**': DEFAULT_SCHEDULE_DATA['Cer** Spa**'].map((item) => ({ ...item })),
+      'Pin*y**on': DEFAULT_SCHEDULE_DATA['Pin*y**on'].map((item) => ({ ...item }))
+    };
+
+    let activeSlide = 'revenue'; // 'revenue' | 'schedule' | 'automation'
+    let activeScheduleChannel = 'Cer** Spa**';
+    let activeScheduleFilter = 'all';
+    let scheduleSearchQuery = '';
+
+    // State Penjadwalan Video & Logs (Ceria Space & Pinkymon, Tab: Logs, Sel E5:F8)
+    const createDefaultCheckboxes = () => [
+      {
+        cell: 'E5',
+        label: 'Scan Video Draft',
+        desc: 'Pindai draf video Private/Unlisted di YouTube',
+        checked: true
+      },
+      {
+        cell: 'E6',
+        label: 'Jadwalkan Video',
+        desc: 'Isi otomatis slot jam kosong mendatang',
+        checked: false
+      },
+      {
+        cell: 'E7',
+        label: 'Update Ke YouTube',
+        desc: 'Terapkan jadwal publikasi ke YouTube Studio',
+        checked: false
+      },
+      {
+        cell: 'E8',
+        label: 'Hapus Logs',
+        desc: 'Bersihkan riwayat log pada tab Logs',
+        checked: false
+      }
+    ];
+
+    let automationCheckboxesByChannel = {
+      ceria: createDefaultCheckboxes(),
+      pinkymon: createDefaultCheckboxes()
+    };
+
+    // Data Awal Tab "Master Control" sesuai screenshot ceria space & pinkymoon
+    const DEFAULT_MASTER_CONTROL_BY_CHANNEL = {
+      ceria: [
+        {
+          cell: 'B1',
+          label: 'Daftar Judul V1 (Pisahkan Koma):',
+          value: 'My soul literally left my body during this Nextbot chase, Surviving 15 seconds against Finn and Jake, Barely slipping past the deadliest Nextbots',
+          multiline: true
+        },
+        {
+          cell: 'B2',
+          label: 'Daftar Judul V2 (Pisahkan Koma):',
+          value: 'Squidward teamed up with Nextbots to hunt me down, Peak nightmare fuel trying to outrun Squidward, I almost lost my sanity fleeing Squidward',
+          multiline: true
+        },
+        {
+          cell: 'B3',
+          label: 'Deskripsi Utama (Master):',
+          value: '#gmod #gmodshorts #nextbot #garrysmod #funnygaming #shorts',
+          multiline: true
+        },
+        {
+          cell: 'B4',
+          label: 'Lokasi Video:',
+          value: 'California',
+          multiline: false
+        }
+      ],
+      pinkymon: [
+        {
+          cell: 'B1',
+          label: 'Judul Master V1 (Satu Judul):',
+          value: 'nextbots in playground mod new update games play',
+          multiline: false
+        },
+        {
+          cell: 'B2',
+          label: 'Judul Master V2 (Satu Judul):',
+          value: 'gmod play sandbox in space play nextbots in playground',
+          multiline: false
+        },
+        {
+          cell: 'B3',
+          label: 'Deskripsi Master V1:',
+          value: 'nextbots in playground mod new update games play #gmod #nextbot #shorts',
+          multiline: true
+        },
+        {
+          cell: 'B4',
+          label: 'Deskripsi Master V2:',
+          value: 'gmod play sandbox in space play nextbots in playground #gmod #sandbox #shorts',
+          multiline: true
+        },
+        {
+          cell: 'B5',
+          label: 'Lokasi Video:',
+          value: 'Jakarta, Indonesia',
+          multiline: false
+        }
+      ]
+    };
+
+    let masterControlByChannel = {
+      ceria: DEFAULT_MASTER_CONTROL_BY_CHANNEL.ceria.map((item) => ({ ...item })),
+      pinkymon: DEFAULT_MASTER_CONTROL_BY_CHANNEL.pinkymon.map((item) => ({ ...item }))
+    };
+    let masterControlSaveTimer = null;
+
+    // Urutan terbaru di paling atas (index 0)
+    const DEFAULT_AUTOMATION_LOGS_BY_CHANNEL = {
+      ceria: [
+        {
+          id: 'cs-log-6',
+          waktu: '2026-11-20 6:06:22',
+          aktivitas: '1. Tarik Video - Preview Slot',
+          detail: '📅 5 Slot Jam Kosong Mendatang: 2026-11-28 00:00 | 2026-11-28 18:00 | 2026-11-29 00:00 | 2026-11-29 18:00 | 2026-11-30 00:00'
+        },
+        {
+          id: 'cs-log-5',
+          waktu: '2026-11-20 6:06:21',
+          aktivitas: '1. Tarik Video',
+          detail: 'ℹ️ Tidak ada draf Private/Unlisted kosongan di YouTube.'
+        },
+        {
+          id: 'cs-log-4',
+          waktu: '2026-11-20 6:06:20',
+          aktivitas: 'Cek Slot',
+          detail: '🔍 Total 35 slot terisi terdeteksi.'
+        },
+        {
+          id: 'cs-log-3',
+          waktu: '2026-11-20 6:06:20',
+          aktivitas: '1. Tarik Video - Preview Slot',
+          detail: '📅 5 Slot Jam Kosong Mendatang: 2026-11-28 00:00 | 2026-11-28 18:00 | 2026-11-29 00:00 | 2026-11-29 18:00 | 2026-11-30 00:00'
+        },
+        {
+          id: 'cs-log-2',
+          waktu: '2026-11-20 6:06:19',
+          aktivitas: '1. Tarik Video',
+          detail: 'ℹ️ Tidak ada draf Private/Unlisted kosongan di YouTube.'
+        },
+        {
+          id: 'cs-log-1',
+          waktu: '2026-11-20 6:06:19',
+          aktivitas: 'Cek Slot',
+          detail: '🔍 Total 35 slot terisi terdeteksi.'
+        }
+      ],
+      pinkymon: [
+        {
+          id: 'pk-log-4',
+          waktu: '2026-11-20 6:10:15',
+          aktivitas: '1. Tarik Video - Preview Slot',
+          detail: '📅 Slot Jam Kosong Mendatang Pinkymon: 2026-11-27 09:00 | 2026-11-27 18:30 | 2026-11-28 09:00 | 2026-11-28 13:00 | 2026-11-28 18:30'
+        },
+        {
+          id: 'pk-log-3',
+          waktu: '2026-11-20 6:10:14',
+          aktivitas: '1. Tarik Video',
+          detail: 'ℹ️ Memeriksa draf Private/Unlisted pada channel Pinkymon.'
+        },
+        {
+          id: 'pk-log-2',
+          waktu: '2026-11-20 6:10:13',
+          aktivitas: 'Cek Slot',
+          detail: '🔍 Total 35 slot terisi terdeteksi pada jadwal Pinkymon.'
+        },
+        {
+          id: 'pk-log-1',
+          waktu: '2026-11-20 6:10:12',
+          aktivitas: 'Scan Video Draft',
+          detail: '✅ Sinkronisasi spreadsheet Pinkymon (Tab Logs) siap digunakan.'
+        }
+      ]
+    };
+
+    let automationLogsByChannel = {
+      ceria: DEFAULT_AUTOMATION_LOGS_BY_CHANNEL.ceria.map((item) => ({ ...item })),
+      pinkymon: DEFAULT_AUTOMATION_LOGS_BY_CHANNEL.pinkymon.map((item) => ({ ...item }))
+    };
+    let activeAutomationChannel = 'ceria'; // 'ceria' | 'pinkymon'
+    let activeLogFilter = 'all';
+    let logSearchQuery = '';
+    let confirmClearLogsArmed = false;
+    let webhookUrlsByChannel = {
+      ceria: localStorage.getItem(AUTOMATION_CHANNELS.ceria.webhookStorageKey) || '',
+      pinkymon: localStorage.getItem(AUTOMATION_CHANNELS.pinkymon.webhookStorageKey) || ''
+    };
+
+    // =========================================================================
+    // 2. UTILITAS FORMAT & KALKULASI
+    // =========================================================================
+    function showToast(message) {
+      const box = document.getElementById('toastBox');
+      const textEl = document.getElementById('toastText');
+      if (!box || !textEl) return;
+      textEl.textContent = message;
+      box.classList.remove('hidden');
+      box.classList.add('flex');
+      clearTimeout(window.__toastTimer);
+      window.__toastTimer = setTimeout(() => {
+        box.classList.add('hidden');
+        box.classList.remove('flex');
+      }, 3000);
+    }
+
+    function formatMoney(usdVal) {
+      const num = Number(usdVal) || 0;
+      if (currencyMode === 'IDR') {
+        const rp = Math.round(num * IDR_RATE);
+        return 'Rp ' + rp.toLocaleString('id-ID');
+      }
+      return '$' + num.toFixed(2).replace('.', ',');
+    }
+
+    function parseUsdValue(raw) {
+      if (typeof raw === 'number') return raw;
+      const cleaned = String(raw || '')
+        .replace(/[^0-9,.-]/g, '')
+        .replace(',', '.');
+      return parseFloat(cleaned) || 0;
+    }
+
+    function parseDayNumber(tanggalStr) {
+      const m = String(tanggalStr || '').match(/^(\d{1,2})/);
+      return m ? m[1] : '1';
+    }
+
+    function calculateStats() {
+      const daysCount = revenueData.length || 1;
+      const pkTotal = revenueData.reduce((acc, item) => acc + item.pinkymon, 0);
+      const csTotal = revenueData.reduce((acc, item) => acc + item.ceria, 0);
+      const totalBulan = revenueData.reduce((acc, item) => acc + item.total, 0);
+      const avgDaily = totalBulan / daysCount;
+      const estAkhir = avgDaily * 30;
+      const csPct = totalBulan > 0 ? (csTotal / totalBulan) * 100 : 50;
+      const pkPct = totalBulan > 0 ? (pkTotal / totalBulan) * 100 : 50;
+      const adsensePct = Math.min(100, Math.round((totalBulan / 100) * 100));
+
+      return {
+        daysCount,
+        pkTotal,
+        csTotal,
+        totalBulan,
+        avgDaily,
+        estAkhir,
+        csPct,
+        pkPct,
+        adsensePct
+      };
+    }
+
+    // =========================================================================
+    // 3. RENDER SLIDE 1: HERO, LATEST STRIP, KPI, CHART, DAILY LIST & ADSENSE
+    // =========================================================================
+    function renderHeroAndLatestStrip() {
+      if (revenueData.length === 0) return;
+      if (selectedDayIndex < 0 || selectedDayIndex >= revenueData.length) {
+        selectedDayIndex = revenueData.length - 1;
+      }
+
+      const item = revenueData[selectedDayIndex];
+      const stats = calculateStats();
+
+      document.getElementById('latestDayNumBadge').textContent = parseDayNumber(item.tanggal);
+      document.getElementById('latestDayTitle').textContent = item.tanggal;
+      document.getElementById('latestDaySubtitle').textContent = `PK ${formatMoney(item.pinkymon)} • CS ${formatMoney(item.ceria)}`;
+      document.getElementById('latestDayTotalPill').textContent = formatMoney(item.total);
+
+      const circle = document.getElementById('latestProgressCircle');
+      const pctText = document.getElementById('latestProgressPctText');
+      if (circle && pctText) {
+        const circumference = 88;
+        const offset = circumference - (circumference * stats.adsensePct) / 100;
+        circle.style.strokeDashoffset = offset;
+        pctText.textContent = `${stats.adsensePct}%`;
+      }
+    }
+
+    function renderEditorialWaveChart() {
+      const svg = document.getElementById('editorialWaveSvg');
+      if (!svg || revenueData.length === 0) return;
+
+      const slice = revenueData.slice(-7);
+      const width = 460;
+      const height = 185;
+      const padLeft = 34;
+      const padRight = 24;
+      const padTop = 34;
+      const padBottom = 26;
+      const plotW = width - padLeft - padRight;
+      const plotH = height - padTop - padBottom;
+
+      const maxVal = Math.max(5, Math.ceil(Math.max(...slice.map((d) => d.total)) + 0.5));
+      const minVal = 0;
+
+      // Horizontal Grid Lines & Y-Axis Labels ($0 - $5)
+      let gridHtml = '';
+      const steps = 5;
+      for (let i = 0; i <= steps; i++) {
+        const val = (maxVal / steps) * i;
+        const y = padTop + plotH - (val / maxVal) * plotH;
+        gridHtml += `
+          <line x1="${padLeft}" y1="${y.toFixed(1)}" x2="${width - padRight}" y2="${y.toFixed(1)}" stroke="#F1F2F4" stroke-width="1" />
+          <text x="4" y="${(y + 3).toFixed(1)}" fill="#9CA3AF" font-size="9" font-weight="600">$${Math.round(val)}</text>
+        `;
+      }
+
+      const points = slice.map((d, i) => {
+        const x = slice.length === 1 ? padLeft + plotW / 2 : padLeft + (i / (slice.length - 1)) * plotW;
+        const y = padTop + plotH - ((d.total - minVal) / (maxVal - minVal)) * plotH;
+        const shortLabel = d.tanggal.replace('-2026', '').replace('-', ' ');
+        return { x, y, item: d, shortLabel, isLatest: i === slice.length - 1 };
+      });
+
+      // Smooth Cubic Bezier Curve Path
+      let pathD = '';
+      points.forEach((pt, idx) => {
+        if (idx === 0) {
+          pathD += `M ${pt.x.toFixed(1)} ${pt.y.toFixed(1)}`;
+        } else {
+          const prev = points[idx - 1];
+          const ctrlX = ((prev.x + pt.x) / 2).toFixed(1);
+          pathD += ` C ${ctrlX} ${prev.y.toFixed(1)}, ${ctrlX} ${pt.y.toFixed(1)}, ${pt.x.toFixed(1)} ${pt.y.toFixed(1)}`;
+        }
+      });
+
+      let dotsAndPillsHtml = '';
+      points.forEach((pt) => {
+        const pillText = formatMoney(pt.item.total);
+        const pillW = Math.max(44, pillText.length * 6.5 + 14);
+        const pillX = pt.x - pillW / 2;
+        const pillY = pt.y - 27;
+
+        dotsAndPillsHtml += `
+          <g class="chart-pill-shadow">
+            <rect x="${pillX.toFixed(1)}" y="${pillY.toFixed(1)}" width="${pillW}" height="19" rx="7" fill="${pt.isLatest ? '#0C0C0C' : '#FFFFFF'}" />
+            <text x="${pt.x.toFixed(1)}" y="${(pillY + 12.5).toFixed(1)}" text-anchor="middle" fill="${pt.isLatest ? '#FFFFFF' : '#0C0C0C'}" font-size="9" font-weight="800">${pillText}</text>
+          </g>
+          <circle cx="${pt.x.toFixed(1)}" cy="${pt.y.toFixed(1)}" r="${pt.isLatest ? '4.5' : '3.5'}" fill="#0C0C0C" stroke="#FFFFFF" stroke-width="1.5" />
+          <text x="${pt.x.toFixed(1)}" y="${height - 4}" text-anchor="middle" fill="${pt.isLatest ? '#0C0C0C' : '#9CA3AF'}" font-size="9" font-weight="${pt.isLatest ? '800' : '600'}">${pt.shortLabel}</text>
+        `;
+      });
+
+      svg.innerHTML = `
+        ${gridHtml}
+        <path d="${pathD}" fill="none" stroke="#0C0C0C" stroke-width="2" stroke-linecap="round" />
+        ${dotsAndPillsHtml}
+      `;
+    }
+
+    function renderChannelSplit(stats) {
+      document.getElementById('splitCeriaText').textContent = `${formatMoney(stats.csTotal)} (${stats.csPct.toFixed(1)}%)`;
+      document.getElementById('splitCeriaBar').style.width = `${stats.csPct.toFixed(1)}%`;
+      document.getElementById('splitPinkyText').textContent = `${formatMoney(stats.pkTotal)} (${stats.pkPct.toFixed(1)}%)`;
+      document.getElementById('splitPinkyBar').style.width = `${stats.pkPct.toFixed(1)}%`;
+    }
+
+    function renderDailyList(autoScrollBottom = true) {
+      const container = document.getElementById('dailyListContainer');
+      const countHeader = document.getElementById('dailyCountHeader');
+      if (!container) return;
+
+      const q = searchQuery.trim().toLowerCase();
+      const filtered = revenueData
+        .map((item, origIdx) => ({ item, origIdx }))
+        .filter(({ item }) => {
+          if (activeFilter === 'pinkymon' && item.pinkymon <= item.ceria) return false;
+          if (activeFilter === 'ceria' && item.ceria <= item.pinkymon) return false;
+          if (activeFilter === 'high' && item.total <= 4.2) return false;
+          if (!q) return true;
+          const hay = `${item.tanggal} ${item.pinkymon} ${item.ceria} ${item.total}`.toLowerCase();
+          return hay.includes(q);
+        });
+
+      if (countHeader) {
+        countHeader.textContent = `${filtered.length} hari tercatat`;
+      }
+
+      if (filtered.length === 0) {
+        container.innerHTML = `
+          <div class="rounded-2xl soft-card p-5 text-center text-xs text-[#6B7280]">
+            Tidak ada data tanggal yang cocok dengan pencarian atau filter.
+          </div>
+        `;
+        return;
+      }
+
+      container.innerHTML = filtered
+        .map(({ item, origIdx }) => {
+          const isSelected = origIdx === selectedDayIndex;
+          const dayNum = parseDayNumber(item.tanggal);
+          return `
+            <div
+              data-day-idx="${origIdx}"
+              class="daily-row-card cursor-pointer rounded-[18px] soft-card px-4 py-3 flex items-center justify-between gap-3 transition ${
+                isSelected ? 'ring-1 ring-[#0C0C0C] bg-[#F1F2F5]' : 'hover:bg-[#EFEFF2]'
+              }"
+            >
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center font-black text-xs text-[#0C0C0C] shrink-0 shadow-2xs">
+                  ${dayNum}
+                </div>
+                <div class="min-w-0">
+                  <div class="text-xs sm:text-sm font-extrabold text-[#0C0C0C] truncate">${item.tanggal}</div>
+                  <div class="text-[11px] font-medium text-[#6B7280] truncate">
+                    PK ${formatMoney(item.pinkymon)} • CS ${formatMoney(item.ceria)}
+                  </div>
+                </div>
+              </div>
+
+              <span class="px-3.5 py-1.5 rounded-full bg-[#0C0C0C] text-white text-xs font-extrabold shrink-0">
+                ${formatMoney(item.total)}
+              </span>
+            </div>
+          `;
+        })
+        .join('');
+
+      container.querySelectorAll('.daily-row-card').forEach((card) => {
+        card.addEventListener('click', () => {
+          selectedDayIndex = parseInt(card.getAttribute('data-day-idx'), 10);
+          renderHeroAndLatestStrip();
+          renderDailyList(false);
+        });
+      });
+
+      if (autoScrollBottom) {
+        requestAnimationFrame(() => {
+          container.scrollTop = container.scrollHeight;
+        });
+      }
+    }
+
+    function renderAdsenseCalendar() {
+      const grid = document.getElementById('adsenseCalendarGrid');
+      const monthLabel = document.getElementById('calMonthLabel');
+      const descEl = document.getElementById('adsenseSelectedDesc');
+      if (!grid || !monthLabel) return;
+
+      const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun', 'Jul', 'Agu', 'Sep', 'Okt', 'Nov', 'Des'];
+      monthLabel.textContent = `${monthNames[calMonth]} ${calYear}`;
+
+      const firstDay = new Date(calYear, calMonth, 1).getDay(); // 0=Sun..6=Sat
+      const mondayOffset = (firstDay + 6) % 7; // Convert to Mon=0..Sun=6
+      const daysInMonth = new Date(calYear, calMonth + 1, 0).getDate();
+
+      const recordedDays = new Set(
+        revenueData.map((d) => parseInt(parseDayNumber(d.tanggal), 10))
+      );
+
+      let cellsHtml = '';
+      for (let i = 0; i < mondayOffset; i++) {
+        cellsHtml += `<div class="h-9"></div>`;
+      }
+
+      for (let day = 1; day <= daysInMonth; day++) {
+        const isSelected = day === selectedCalendarDay;
+        const isTgl3 = day === 3;
+        const isTgl20 = day === 20;
+        const isPayoutWindow = day >= 21 && day <= 26;
+        const hasRevenueDot = calMonth === 10 && calYear === 2026 && recordedDays.has(day);
+
+        let btnClass = 'bg-white text-[#0C0C0C] hover:bg-[#E5E7EB]';
+        if (isSelected) {
+          btnClass = 'bg-[#0C0C0C] text-white';
+        } else if (isTgl3 || isTgl20) {
+          btnClass = 'bg-white text-[#0C0C0C] ring-1 ring-[#0C0C0C]';
+        } else if (isPayoutWindow) {
+          btnClass = 'bg-[#E5E7EB] text-[#0C0C0C]';
+        }
+
+        cellsHtml += `
+          <button
+            type="button"
+            data-cal-day="${day}"
+            class="cal-day-btn h-9 rounded-xl text-xs font-extrabold flex flex-col items-center justify-center transition ${btnClass}"
+          >
+            <span>${day}</span>
+            ${hasRevenueDot ? `<span class="w-1 h-1 rounded-full ${isSelected ? 'bg-white' : 'bg-[#0C0C0C]'} mt-0.5"></span>` : ''}
+          </button>
+        `;
+      }
+
+      grid.innerHTML = cellsHtml;
+
+      grid.querySelectorAll('.cal-day-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          selectedCalendarDay = parseInt(btn.getAttribute('data-cal-day'), 10);
+          renderAdsenseCalendar();
+        });
+      });
+
+      if (descEl) {
+        const stats = calculateStats();
+        let detailNote = 'Siklus pencairan Tgl 3, 20, & 21–26.';
+        if (selectedCalendarDay === 3) {
+          detailNote = 'Finalisasi penghasilan bulan sebelumnya ke halaman Pembayaran.';
+        } else if (selectedCalendarDay === 20) {
+          detailNote = `Batas perubahan info & cek ambang $100 (Est. ${formatMoney(stats.estAkhir)}).`;
+        } else if (selectedCalendarDay >= 21 && selectedCalendarDay <= 26) {
+          detailNote = 'Jendela pembayaran diproses & pengiriman transfer bank (5–7 hari kerja).';
+        }
+        descEl.textContent = `Dipilih: ${selectedCalendarDay} ${monthNames[calMonth]} ${calYear} • ${detailNote}`;
+      }
+    }
+
+    // =========================================================================
+    // 4. PARSER & LIVE AUTO-SYNC GOOGLE SHEETS (REVENUE + SCHEDULE + LOGS)
+    // =========================================================================
+    function parseCsvLine(line) {
+      const result = [];
+      let current = '';
+      let inQuotes = false;
+      for (let i = 0; i < line.length; i++) {
+        const ch = line[i];
+        if (ch === '"') {
+          if (inQuotes && line[i + 1] === '"') {
+            current += '"';
+            i++;
+          } else {
+            inQuotes = !inQuotes;
+          }
+        } else if (ch === ',' && !inQuotes) {
+          result.push(current.trim());
+          current = '';
+        } else {
+          current += ch;
+        }
+      }
+      result.push(current.trim());
+      return result;
+    }
+
+    function parseSheetMatrix(matrix) {
+      if (!Array.isArray(matrix) || matrix.length === 0) return false;
+      const parsed = [];
+      matrix.forEach((row) => {
+        if (!Array.isArray(row)) return;
+        const tanggal = String(row[0] || '').trim();
+        if (/^\d{1,2}-[A-Za-z]{3}-\d{4}$/.test(tanggal)) {
+          const pk = parseUsdValue(row[1]);
+          const cs = parseUsdValue(row[2]);
+          const tot = row[3] !== undefined && String(row[3]).trim() !== '' ? parseUsdValue(row[3]) : Number((pk + cs).toFixed(2));
+          parsed.push({
+            tanggal,
+            pinkymon: Number(pk.toFixed(2)),
+            ceria: Number(cs.toFixed(2)),
+            total: Number(tot.toFixed(2))
+          });
+        }
+      });
+
+      if (parsed.length > 0) {
+        revenueData = parsed;
+        selectedDayIndex = revenueData.length - 1;
+        return true;
+      }
+      return false;
+    }
+
+    function parseScheduleMatrix(matrix) {
+      if (!Array.isArray(matrix) || matrix.length === 0) return [];
+      const items = [];
+      matrix.forEach((row) => {
+        if (!Array.isArray(row)) return;
+        const tanggal = String(row[2] || '').trim();
+        if (/^\d{1,2}-\d{1,2}-\d{4}$/.test(tanggal) || /^\d{1,2}-[A-Za-z]{3}-\d{4}$/.test(tanggal)) {
+          items.push({
+            no: parseInt(row[0], 10) || items.length + 1,
+            hari: String(row[1] || '').trim(),
+            tanggal,
+            jam: String(row[3] || '').trim(),
+            jenis: String(row[4] || 'Shorts').trim(),
+            judul: String(row[5] || '').trim()
+          });
+        }
+      });
+      return items;
+    }
+
+    function parseLogsSheetMatrix(matrix, channelKey = 'ceria') {
+      if (!Array.isArray(matrix) || matrix.length === 0) return false;
+      const parsedLogs = [];
+      let foundAny = false;
+      const channelCheckboxes = automationCheckboxesByChannel[channelKey];
+
+      matrix.forEach((row, idx) => {
+        if (!Array.isArray(row)) return;
+
+        // Parse Kolom A (Waktu WIB), Kolom B (Aktivitas / Fungsi), Kolom C (Detail Debug)
+        const waktu = String(row[0] || '').trim();
+        const aktivitas = String(row[1] || '').trim();
+        const detail = String(row[2] || '').trim();
+
+        if (
+          waktu &&
+          !/^waktu/i.test(waktu) &&
+          (aktivitas || detail)
+        ) {
+          parsedLogs.push({
+            id: `${channelKey}-sheet-${idx}-${waktu}`,
+            waktu,
+            aktivitas: aktivitas || 'Log Sistem',
+            detail
+          });
+          foundAny = true;
+        }
+
+        // Parse Checkbox di Kolom E (row[4]) & Label di Kolom F (row[5])
+        const rawCheck = String(row[4] || '').trim().toUpperCase();
+        const labelF = String(row[5] || '').trim();
+        if (labelF && (rawCheck === 'TRUE' || rawCheck === 'FALSE')) {
+          const targetCb = channelCheckboxes.find(
+            (cbItem) => cbItem.label.toLowerCase() === labelF.toLowerCase()
+          );
+          if (targetCb) {
+            targetCb.checked = rawCheck === 'TRUE';
+            foundAny = true;
+          }
+        }
+      });
+
+      if (parsedLogs.length > 0) {
+        // Balik urutan agar log baris paling bawah di Google Sheets (terbaru) tampil paling atas
+        automationLogsByChannel[channelKey] = parsedLogs.reverse();
+      }
+      return foundAny;
+    }
+
+    function parseMasterControlMatrix(matrix, channelKey = 'ceria') {
+      if (!Array.isArray(matrix) || matrix.length === 0) return false;
+      const parsedFields = [];
+
+      matrix.forEach((row, idx) => {
+        if (!Array.isArray(row)) return;
+        const label = String(row[0] || '').trim();
+        const val = row[1] !== undefined && row[1] !== null ? String(row[1]).trim() : '';
+        if (label) {
+          const isLong = /judul|deskripsi/i.test(label) || val.length > 48;
+          parsedFields.push({
+            cell: `B${idx + 1}`,
+            label,
+            value: val,
+            multiline: isLong
+          });
+        }
+      });
+
+      if (parsedFields.length > 0) {
+        masterControlByChannel[channelKey] = parsedFields;
+        return true;
+      }
+      return false;
+    }
+
+    async function fetchSheetTabMatrix(tabName, cb, targetSpreadsheetId = SPREADSHEET_ID) {
+      const jsonUrl = `https://docs.google.com/spreadsheets/d/${targetSpreadsheetId}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(tabName)}&cb=${cb}`;
+      const csvUrl = `https://docs.google.com/spreadsheets/d/${targetSpreadsheetId}/gviz/tq?tqx=csv&sheet=${encodeURIComponent(tabName)}&cb=${cb}`;
+
+      try {
+        const res = await fetch(jsonUrl, { cache: 'no-store' });
+        if (res.ok) {
+          const text = await res.text();
+          const s = text.indexOf('{');
+          const e = text.lastIndexOf('}');
+          if (s !== -1 && e > s) {
+            const payload = JSON.parse(text.slice(s, e + 1));
+            const rows = (payload.table && payload.table.rows) || [];
+            return rows.map((r) =>
+              (r.c || []).map((cell) => (cell && (cell.f || cell.v) !== null ? (cell.f || cell.v) : ''))
+            );
+          }
+        }
+      } catch (_e) {}
+
+      try {
+        const csvRes = await fetch(csvUrl, { cache: 'no-store' });
+        if (csvRes.ok) {
+          const csvText = await csvRes.text();
+          return csvText.split(/\r?\n/).map(parseCsvLine);
+        }
+      } catch (_e2) {}
+
+      return null;
+    }
+
+    async function syncLiveSheet(showFeedback = false) {
+      const tinyTag = document.getElementById('liveSyncTinyTag');
+      const icon = document.getElementById('railRefreshIcon');
+      if (tinyTag) tinyTag.textContent = 'Syncing...';
+      if (icon) icon.classList.add('animate-spin');
+
+      const cb = Date.now();
+      let synced = false;
+
+      const revMatrix = await fetchSheetTabMatrix(SHEET_NAME, cb, SPREADSHEET_ID);
+      if (revMatrix) {
+        synced = parseSheetMatrix(revMatrix) || synced;
+      }
+
+      // Sinkronkan juga tab jadwal "Cer** Spa**" dan "Pin*y**on"
+      for (const tabKey of Object.values(SCHEDULE_TABS)) {
+        const schedMatrix = await fetchSheetTabMatrix(tabKey, cb, SPREADSHEET_ID);
+        if (schedMatrix) {
+          const parsedSched = parseScheduleMatrix(schedMatrix);
+          if (parsedSched.length > 0) {
+            scheduleData[tabKey] = parsedSched;
+            synced = true;
+          }
+        }
+      }
+
+      // Sinkronkan tab "Logs" & Checkbox E5:F8 + tab "Master Control" dari spreadsheet Ceria Space & Pinkymon
+      for (const chCfg of Object.values(AUTOMATION_CHANNELS)) {
+        const logsMatrix = await fetchSheetTabMatrix(AUTOMATION_SHEET_NAME, cb, chCfg.spreadsheetId);
+        if (logsMatrix) {
+          synced = parseLogsSheetMatrix(logsMatrix, chCfg.key) || synced;
+        }
+        const mcMatrix = await fetchSheetTabMatrix(MASTER_CONTROL_SHEET_NAME, cb, chCfg.spreadsheetId);
+        if (mcMatrix) {
+          synced = parseMasterControlMatrix(mcMatrix, chCfg.key) || synced;
+        }
+      }
+
+      const nowStr = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+      const detailTitle = document.getElementById('syncDetailTitle');
+      const detailDesc = document.getElementById('syncDetailDesc');
+      const logsSyncEl = document.getElementById('automationLogsSyncTime');
+      const activeLogsCount = (automationLogsByChannel[activeAutomationChannel] || []).length;
+
+      if (synced) {
+        if (tinyTag) tinyTag.textContent = `Live • ${nowStr}`;
+        if (logsSyncEl) logsSyncEl.textContent = `Tab Logs • Live ${nowStr}`;
+        if (detailTitle) detailTitle.textContent = `Status: Terhubung Live (${nowStr})`;
+        if (detailDesc) detailDesc.innerHTML = `Berhasil memuat <strong>${revenueData.length} hari</strong> data revenue, jadwal video &amp; <strong>${activeLogsCount} log</strong>.`;
+        renderDashboard(true);
+        renderScheduleSlide();
+        renderAutomationSlide();
+        if (showFeedback) showToast(`Data Google Sheets diperbarui (${nowStr})`);
+      } else {
+        if (tinyTag) tinyTag.textContent = `Live • ${nowStr}`;
+        if (logsSyncEl) logsSyncEl.textContent = `Tab Logs • ${nowStr}`;
+        if (detailTitle) detailTitle.textContent = `Status: Sinkronisasi Aktif (${nowStr})`;
+        if (detailDesc) detailDesc.innerHTML = `Menampilkan <strong>${revenueData.length} hari</strong> data dari tab <strong>Revenue</strong>, jadwal video &amp; <strong>${activeLogsCount} log</strong>.`;
+        renderScheduleSlide();
+        renderAutomationSlide();
+        if (showFeedback) showToast('Data dashboard & logs diperbarui');
+      }
+
+      if (icon) icon.classList.remove('animate-spin');
+    }
+
+    function restartAutoSyncTimer() {
+      if (autoSyncTimer) {
+        clearInterval(autoSyncTimer);
+        autoSyncTimer = null;
+      }
+      if (autoSyncMs > 0) {
+        autoSyncTimer = setInterval(() => {
+          syncLiveSheet(false);
+        }, autoSyncMs);
+      }
+    }
+
+    // =========================================================================
+    // 5. ANALISIS & RENDER SLIDE 2: CEK VIDEO TERJADWAL (Cer** Spa** & Pin*y**on)
+    // =========================================================================
+    function analyzeChannelSchedule(channelTab) {
+      const rows = scheduleData[channelTab] || [];
+      const expectedSlots = EXPECTED_SLOTS[channelTab] || [];
+      const groupedMap = new Map();
+
+      rows.forEach((item) => {
+        const key = item.tanggal;
+        if (!groupedMap.has(key)) {
+          groupedMap.set(key, {
+            tanggal: item.tanggal,
+            hari: item.hari,
+            videos: []
+          });
+        }
+        groupedMap.get(key).videos.push(item);
+      });
+
+      const days = Array.from(groupedMap.values()).map((dayObj) => {
+        const bookedTimes = new Set(dayObj.videos.map((v) => v.jam));
+        const missingSlots = expectedSlots.filter((slot) => !bookedTimes.has(slot));
+        const count = dayObj.videos.length;
+        const missingCount = Math.max(0, 4 - count);
+        return {
+          ...dayObj,
+          count,
+          missingCount,
+          missingSlots,
+          isComplete: count >= 4
+        };
+      });
+
+      const incompleteDays = days.filter((d) => !d.isComplete);
+      const completeDays = days.filter((d) => d.isComplete);
+      const totalMissingVideos = incompleteDays.reduce((acc, d) => acc + d.missingCount, 0);
+
+      return {
+        totalVideos: rows.length,
+        days,
+        incompleteDays,
+        completeDays,
+        totalMissingVideos,
+        expectedSlots
+      };
+    }
+
+    function switchSlide(targetSlide) {
+      activeSlide = targetSlide;
+      const mainSlide = document.getElementById('mainDashboardSlide');
+      const schedSlide = document.getElementById('scheduleSlideView');
+      const autoSlide = document.getElementById('automationSlideView');
+
+      mainSlide.classList.add('hidden');
+      mainSlide.classList.remove('lg:flex');
+      schedSlide.classList.add('hidden');
+      schedSlide.classList.remove('flex');
+      autoSlide.classList.add('hidden');
+      autoSlide.classList.remove('flex');
+
+      if (targetSlide === 'schedule') {
+        schedSlide.classList.remove('hidden');
+        schedSlide.classList.add('flex');
+        renderScheduleSlide();
+      } else if (targetSlide === 'automation') {
+        autoSlide.classList.remove('hidden');
+        autoSlide.classList.add('flex');
+        renderAutomationSlide();
+      } else {
+        mainSlide.classList.remove('hidden');
+        mainSlide.classList.add('lg:flex');
+      }
+    }
+
+    function renderScheduleSlide() {
+      const ceriaAudit = analyzeChannelSchedule('Cer** Spa**');
+      const pinkyAudit = analyzeChannelSchedule('Pin*y**on');
+
+      const totalIncompleteAll = ceriaAudit.incompleteDays.length + pinkyAudit.incompleteDays.length;
+      const railDot = document.getElementById('railScheduleAlertDot');
+      if (railDot) railDot.textContent = totalIncompleteAll;
+      document.getElementById('badgeIncompleteCeria').textContent = ceriaAudit.incompleteDays.length;
+      document.getElementById('badgeIncompletePinky').textContent = pinkyAudit.incompleteDays.length;
+
+      document.querySelectorAll('.sched-channel-tab').forEach((btn) => {
+        const ch = btn.getAttribute('data-sched-channel');
+        if (ch === activeScheduleChannel) {
+          btn.className = 'sched-channel-tab px-4 py-2 rounded-xl bg-[#0C0C0C] text-white text-xs font-extrabold flex items-center gap-2 transition';
+        } else {
+          btn.className = 'sched-channel-tab px-4 py-2 rounded-xl text-[#4B5563] hover:text-[#0C0C0C] text-xs font-bold flex items-center gap-2 transition';
+        }
+      });
+
+      const audit = activeScheduleChannel === 'Cer** Spa**' ? ceriaAudit : pinkyAudit;
+
+      document.getElementById('schedTotalVideosStat').textContent = `${audit.totalVideos} Video`;
+      document.getElementById('schedCompleteDaysStat').textContent = `${audit.completeDays.length} Hari`;
+      document.getElementById('schedIncompleteDaysStat').textContent = `${audit.incompleteDays.length} Hari`;
+      document.getElementById('schedMissingVideosCountBadge').textContent = audit.totalMissingVideos > 0
+        ? `-${audit.totalMissingVideos} Video`
+        : 'Lengkap';
+      document.getElementById('incompleteAlertHeading').textContent = `Hari Tidak Lengkap 4 Video — ${activeScheduleChannel}`;
+      document.getElementById('incompleteSlotRuleHint').textContent = `Slot standar: ${audit.expectedSlots.join(', ')}`;
+
+      const alertGrid = document.getElementById('incompleteDaysCardsGrid');
+      if (audit.incompleteDays.length === 0) {
+        alertGrid.innerHTML = `
+          <div class="col-span-full rounded-2xl bg-white p-4 text-xs font-semibold text-[#0C0C0C]">
+            Semua hari terjadwal pada channel ${activeScheduleChannel} sudah lengkap 4 video!
+          </div>
+        `;
+      } else {
+        alertGrid.innerHTML = audit.incompleteDays
+          .map((day) => `
+            <div class="rounded-2xl bg-white p-3.5 border border-[#E5E7EB] flex flex-col justify-between gap-2">
+              <div class="flex items-center justify-between gap-2">
+                <div>
+                  <div class="text-xs font-extrabold text-[#0C0C0C]">${day.hari}, ${day.tanggal}</div>
+                  <div class="text-[11px] font-medium text-[#6B7280]">Terisi ${day.count} dari 4 video</div>
+                </div>
+                <span class="px-2.5 py-1 rounded-full bg-[#0C0C0C] text-white text-[10px] font-extrabold">
+                  Kurang ${day.missingCount}
+                </span>
+              </div>
+              <div class="pt-1.5 border-t border-[#F3F4F6] text-[10px] font-semibold text-[#EF4444]">
+                Kosong: ${day.missingSlots.join(' & ')}
+              </div>
+            </div>
+          `)
+          .join('');
+      }
+
+      const q = scheduleSearchQuery.trim().toLowerCase();
+      const filteredDays = audit.days.filter((day) => {
+        if (activeScheduleFilter === 'incomplete' && day.isComplete) return false;
+        if (activeScheduleFilter === 'complete' && !day.isComplete) return false;
+        if (!q) return true;
+        const blob = `${day.hari} ${day.tanggal} ${day.videos.map((v) => `${v.jam} ${v.judul}`).join(' ')}`.toLowerCase();
+        return blob.includes(q);
+      });
+
+      document.getElementById('schedRenderedDaysLabel').textContent = `${filteredDays.length} hari ditampilkan`;
+
+      const cardsContainer = document.getElementById('scheduleDailyCardsContainer');
+      if (filteredDays.length === 0) {
+        cardsContainer.innerHTML = `
+          <div class="rounded-2xl soft-card p-6 text-center text-xs text-[#6B7280]">
+            Tidak ada jadwal video yang cocok dengan filter atau pencarian.
+          </div>
+        `;
+        return;
+      }
+
+      cardsContainer.innerHTML = filteredDays
+        .map((day) => {
+          const dayNum = parseDayNumber(day.tanggal);
+          const slotPillsHtml = audit.expectedSlots
+            .map((slotTime) => {
+              const foundVideo = day.videos.find((v) => v.jam === slotTime);
+              if (foundVideo) {
+                return `
+                  <div class="rounded-xl bg-white px-3 py-2 border border-[#E5E7EB] flex items-center justify-between gap-2 min-w-0">
+                    <div class="min-w-0">
+                      <div class="text-[10px] font-extrabold text-[#0C0C0C]">${slotTime} • ${foundVideo.jenis}</div>
+                      <div class="text-[11px] font-medium text-[#4B5563] truncate">${foundVideo.judul}</div>
+                    </div>
+                    <span class="w-5 h-5 rounded-full bg-[#0C0C0C] text-white text-[10px] font-bold flex items-center justify-center shrink-0">✓</span>
+                  </div>
+                `;
+              }
+              return `
+                <div class="rounded-xl bg-white/60 px-3 py-2 border border-dashed border-[#EF4444] flex items-center justify-between gap-2">
+                  <div>
+                    <div class="text-[10px] font-extrabold text-[#EF4444]">${slotTime} • Slot Kosong</div>
+                    <div class="text-[11px] font-medium text-[#6B7280]">Belum ada video terjadwal</div>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full bg-[#EF4444] text-white text-[9px] font-extrabold shrink-0">Kosong</span>
+                </div>
+              `;
+            })
+            .join('');
+
+          return `
+            <div class="rounded-[18px] soft-card p-4 ${!day.isComplete ? 'ring-1 ring-[#0C0C0C]' : ''}">
+              <div class="flex items-center justify-between gap-3 mb-3">
+                <div class="flex items-center gap-3">
+                  <div class="w-10 h-10 rounded-xl bg-white flex items-center justify-center font-black text-xs text-[#0C0C0C] shadow-2xs">
+                    ${dayNum}
+                  </div>
+                  <div>
+                    <div class="text-xs sm:text-sm font-extrabold text-[#0C0C0C]">${day.hari}, ${day.tanggal}</div>
+                    <div class="text-[11px] font-medium text-[#6B7280]">
+                      ${day.isComplete ? 'Kuota harian 4 Shorts terpenuhi' : `Kurang ${day.missingCount} video (${day.missingSlots.join(', ')})`}
+                    </div>
+                  </div>
+                </div>
+
+                <span class="px-3.5 py-1.5 rounded-full text-xs font-extrabold ${
+                  day.isComplete
+                    ? 'bg-white text-[#0C0C0C] border border-[#E5E7EB]'
+                    : 'bg-[#0C0C0C] text-white'
+                }">
+                  ${day.count}/4 Video
+                </span>
+              </div>
+
+              <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                ${slotPillsHtml}
+              </div>
+            </div>
+          `;
+        })
+        .join('');
+    }
+
+    // =========================================================================
+    // 6. RENDER SLIDE 3: PENJADWALAN VIDEO & DATA LOGS (CERIA SPACE & PINKYMON)
+    // =========================================================================
+    function getAppsScriptTemplateCode(channelKey = activeAutomationChannel) {
+      const chCfg = AUTOMATION_CHANNELS[channelKey] || AUTOMATION_CHANNELS.ceria;
+      return [
+        `const WEBHOOK_SHEET_ID = '${chCfg.spreadsheetId}';`,
+        `const WEBHOOK_LOGS_TAB = '${AUTOMATION_SHEET_NAME}';`,
+        `const WEBHOOK_MASTER_TAB = '${MASTER_CONTROL_SHEET_NAME}';`,
+        ``,
+        `function applyMasterControlPayload(ss, cellsMap) {`,
+        `  const sheet = ss.getSheetByName(WEBHOOK_MASTER_TAB);`,
+        `  if (!sheet) throw new Error('Tab ' + WEBHOOK_MASTER_TAB + ' tidak ditemukan');`,
+        `  Object.keys(cellsMap || {}).forEach(function(cell) {`,
+        `    if (/^B([1-9]|1[0-9]|20)$/i.test(cell)) {`,
+        `      const norm = cell.toUpperCase();`,
+        `      const val = String(cellsMap[cell] || '');`,
+        `      const range = sheet.getRange(norm);`,
+        `      range.setValue(val);`,
+        `      SpreadsheetApp.flush();`,
+        `      if (typeof onEdit === 'function') {`,
+        `        onEdit({ source: ss, range: range, value: val, oldValue: '' });`,
+        `      }`,
+        `    }`,
+        `  });`,
+        `}`,
+        ``,
+        `function applyCheckboxPayload(ss, params) {`,
+        `  const sheet = ss.getSheetByName(WEBHOOK_LOGS_TAB);`,
+        `  if (!sheet) throw new Error('Tab ' + WEBHOOK_LOGS_TAB + ' tidak ditemukan');`,
+        `  ['E5', 'E6', 'E7', 'E8'].forEach(function(cell) {`,
+        `    if (params[cell] !== undefined) {`,
+        `      const val = String(params[cell]).toLowerCase() === 'true' || params[cell] === true;`,
+        `      const range = sheet.getRange(cell);`,
+        `      range.setValue(val);`,
+        `      SpreadsheetApp.flush();`,
+        `      if (val && typeof onEdit === 'function') {`,
+        `        onEdit({ source: ss, range: range, value: 'TRUE', oldValue: 'FALSE' });`,
+        `      }`,
+        `    }`,
+        `  });`,
+        `}`,
+        ``,
+        `function routeWebhookPayload(payload) {`,
+        `  const ss = SpreadsheetApp.getActiveSpreadsheet() || SpreadsheetApp.openById(WEBHOOK_SHEET_ID);`,
+        `  if (payload && payload.action === 'updateMasterControl') {`,
+        `    const cells = typeof payload.cells === 'string' ? JSON.parse(payload.cells) : (payload.cells || {});`,
+        `    applyMasterControlPayload(ss, cells);`,
+        `  } else {`,
+        `    applyCheckboxPayload(ss, payload || {});`,
+        `  }`,
+        `}`,
+        ``,
+        `function doPost(e) {`,
+        `  try {`,
+        `    const data = e && e.postData && e.postData.contents ? JSON.parse(e.postData.contents) : {};`,
+        `    routeWebhookPayload(data);`,
+        `    return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);`,
+        `  } catch (err) {`,
+        `    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: err.message })).setMimeType(ContentService.MimeType.JSON);`,
+        `  }`,
+        `}`,
+        ``,
+        `function doGet(e) {`,
+        `  try {`,
+        `    routeWebhookPayload((e && e.parameter) || {});`,
+        `    return ContentService.createTextOutput(JSON.stringify({ ok: true })).setMimeType(ContentService.MimeType.JSON);`,
+        `  } catch (err) {`,
+        `    return ContentService.createTextOutput(JSON.stringify({ ok: false, error: err.message })).setMimeType(ContentService.MimeType.JSON);`,
+        `  }`,
+        `}`
+      ].join('\n');
+    }
+
+    function prependAutomationLog(channelKey, aktivitas, detail) {
+      const now = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      const waktu = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${now.getHours()}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+      if (!automationLogsByChannel[channelKey]) {
+        automationLogsByChannel[channelKey] = [];
+      }
+      automationLogsByChannel[channelKey].unshift({
+        id: `${channelKey}-local-${Date.now()}-${Math.random().toString(36).slice(2, 6)}`,
+        waktu,
+        aktivitas,
+        detail
+      });
+    }
+
+    async function saveMasterControlToSpreadsheet(targetCellsSubset = null, silent = false) {
+      const channelKey = activeAutomationChannel;
+      const chCfg = AUTOMATION_CHANNELS[channelKey];
+      const fields = masterControlByChannel[channelKey] || [];
+      const currentWebhookUrl = webhookUrlsByChannel[channelKey] || '';
+      const badge = document.getElementById('masterControlSyncBadge');
+
+      const cellsPayload = {};
+      const updatedLabels = [];
+      fields.forEach((f) => {
+        if (!targetCellsSubset || targetCellsSubset.includes(f.cell)) {
+          cellsPayload[f.cell] = f.value;
+          updatedLabels.push(`${f.cell} (${f.label.replace(/:$/, '')})`);
+        }
+      });
+
+      if (badge) {
+        badge.textContent = 'Menyimpan ke Sheet...';
+        badge.className = 'px-2.5 py-0.5 rounded-full bg-[#0C0C0C] text-white text-[10px] font-bold';
+      }
+
+      if (!currentWebhookUrl) {
+        if (badge) {
+          badge.textContent = 'Tersimpan Lokal • Set Webhook untuk Auto-Write';
+          badge.className = 'px-2.5 py-0.5 rounded-full bg-white border border-[#D1D5DB] text-[10px] font-bold text-[#0C0C0C]';
+        }
+        if (!silent) {
+          showToast(`Master Control ${chCfg.name} diperbarui • Atur Webhook agar otomatis tertulis ke Sheet`);
+        }
+        return;
+      }
+
+      try {
+        const bodyObj = {
+          action: 'updateMasterControl',
+          cells: cellsPayload
+        };
+        const query = new URLSearchParams({
+          action: 'updateMasterControl',
+          cells: JSON.stringify(cellsPayload)
+        }).toString();
+        const targetUrl = currentWebhookUrl.includes('?') ? `${currentWebhookUrl}&${query}` : `${currentWebhookUrl}?${query}`;
+
+        await fetch(targetUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(bodyObj)
+        });
+
+        const nowTime = new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
+        if (badge) {
+          badge.textContent = `Tersimpan ke Sheet • ${nowTime}`;
+          badge.className = 'px-2.5 py-0.5 rounded-full bg-[#0C0C0C] text-white text-[10px] font-bold';
+        }
+
+        prependAutomationLog(
+          channelKey,
+          `Update Master Control (${chCfg.name})`,
+          `✅ Otomatis tertulis ke tab Master Control (${chCfg.sheetLabel}): ${updatedLabels.join(', ')}`
+        );
+        renderAutomationSlide();
+        if (!silent) {
+          showToast(`Master Control ${chCfg.name} otomatis tertulis ke Spreadsheet`);
+        }
+      } catch (_err) {
+        if (badge) {
+          badge.textContent = 'Gagal Kirim • Cek Webhook';
+          badge.className = 'px-2.5 py-0.5 rounded-full bg-[#EF4444] text-white text-[10px] font-bold';
+        }
+        showToast(`Gagal menulis Master Control ${chCfg.name}`);
+      }
+    }
+
+    function renderMasterControlFields() {
+      const grid = document.getElementById('masterControlFieldsGrid');
+      const hint = document.getElementById('masterControlSheetNameHint');
+      const badge = document.getElementById('masterControlSyncBadge');
+      if (!grid) return;
+
+      const chCfg = AUTOMATION_CHANNELS[activeAutomationChannel] || AUTOMATION_CHANNELS.ceria;
+      const fields = masterControlByChannel[activeAutomationChannel] || [];
+      const hasWebhook = Boolean(webhookUrlsByChannel[activeAutomationChannel]);
+
+      if (hint) hint.textContent = chCfg.sheetLabel;
+      if (badge) {
+        badge.textContent = hasWebhook ? `Auto-Write Sheet (${chCfg.name})` : 'Preview Lokal • Butuh Webhook';
+      }
+
+      grid.innerHTML = fields
+        .map((field, idx) => {
+          const isFullSpan = field.multiline;
+          return `
+            <div class="rounded-[16px] bg-white p-3.5 border border-[#E5E7EB] focus-within:border-[#0C0C0C] transition ${
+              isFullSpan ? 'sm:col-span-2' : ''
+            }">
+              <div class="flex items-center justify-between gap-2 mb-1.5">
+                <label class="text-xs font-extrabold text-[#0C0C0C]">${field.label}</label>
+                <span class="px-2 py-0.5 rounded-md bg-[#F5F6F8] text-[10px] font-bold text-[#4B5563]">Sel ${field.cell}</span>
+              </div>
+              ${
+                field.multiline
+                  ? `<textarea
+                      rows="2"
+                      data-mc-idx="${idx}"
+                      data-mc-cell="${field.cell}"
+                      class="master-control-input w-full px-3 py-2 rounded-xl bg-[#F5F6F8] focus:bg-white border border-transparent focus:border-[#0C0C0C] text-xs font-medium text-[#0C0C0C] leading-relaxed focus:outline-none transition resize-y"
+                    >${field.value}</textarea>`
+                  : `<input
+                      type="text"
+                      data-mc-idx="${idx}"
+                      data-mc-cell="${field.cell}"
+                      value="${field.value.replace(/"/g, '&quot;')}"
+                      class="master-control-input w-full px-3 py-2 rounded-xl bg-[#F5F6F8] focus:bg-white border border-transparent focus:border-[#0C0C0C] text-xs font-medium text-[#0C0C0C] focus:outline-none transition"
+                    />`
+              }
+            </div>
+          `;
+        })
+        .join('');
+
+      grid.querySelectorAll('.master-control-input').forEach((inputEl) => {
+        inputEl.addEventListener('input', (e) => {
+          const idx = parseInt(e.target.getAttribute('data-mc-idx'), 10);
+          const cell = e.target.getAttribute('data-mc-cell');
+          fields[idx].value = e.target.value;
+
+          const mcBadge = document.getElementById('masterControlSyncBadge');
+          if (mcBadge) mcBadge.textContent = 'Mengetik...';
+
+          clearTimeout(masterControlSaveTimer);
+          masterControlSaveTimer = setTimeout(() => {
+            saveMasterControlToSpreadsheet([cell], false);
+          }, 1100);
+        });
+
+        inputEl.addEventListener('change', (e) => {
+          clearTimeout(masterControlSaveTimer);
+          const idx = parseInt(e.target.getAttribute('data-mc-idx'), 10);
+          const cell = e.target.getAttribute('data-mc-cell');
+          fields[idx].value = e.target.value;
+          saveMasterControlToSpreadsheet([cell], false);
+        });
+      });
+    }
+
+    function deleteAutomationLog(logId) {
+      const list = automationLogsByChannel[activeAutomationChannel] || [];
+      automationLogsByChannel[activeAutomationChannel] = list.filter((item) => item.id !== logId);
+      renderAutomationSlide();
+      showToast('1 baris log dihapus');
+    }
+
+    function clearAllAutomationLogs() {
+      const btn = document.getElementById('clearAutomationLogsBtn');
+      const label = document.getElementById('clearAutomationLogsBtnLabel');
+
+      if (!confirmClearLogsArmed) {
+        confirmClearLogsArmed = true;
+        if (btn) btn.className = 'px-3.5 py-2 rounded-full bg-[#EF4444] hover:bg-red-600 text-white text-xs font-bold flex items-center gap-1.5 shrink-0 transition';
+        if (label) label.textContent = 'Yakin Hapus Semua?';
+        clearTimeout(window.__clearLogsArmTimer);
+        window.__clearLogsArmTimer = setTimeout(() => {
+          confirmClearLogsArmed = false;
+          if (btn) btn.className = 'px-3.5 py-2 rounded-full bg-[#0C0C0C] hover:bg-neutral-800 text-white text-xs font-bold flex items-center gap-1.5 shrink-0 transition';
+          if (label) label.textContent = 'Hapus Logs';
+        }, 3500);
+        return;
+      }
+
+      clearTimeout(window.__clearLogsArmTimer);
+      confirmClearLogsArmed = false;
+      if (btn) btn.className = 'px-3.5 py-2 rounded-full bg-[#0C0C0C] hover:bg-neutral-800 text-white text-xs font-bold flex items-center gap-1.5 shrink-0 transition';
+      if (label) label.textContent = 'Hapus Logs';
+
+      const chCfg = AUTOMATION_CHANNELS[activeAutomationChannel];
+      automationLogsByChannel[activeAutomationChannel] = [];
+      renderAutomationSlide();
+      showToast(`Semua log ${chCfg.name} dihapus`);
+    }
+
+    async function sendCheckboxesToSpreadsheet(singleCellKey = null) {
+      const channelKey = activeAutomationChannel;
+      const chCfg = AUTOMATION_CHANNELS[channelKey];
+      const checkboxes = automationCheckboxesByChannel[channelKey];
+      const currentWebhookUrl = webhookUrlsByChannel[channelKey] || '';
+
+      if (singleCellKey) {
+        checkboxes.forEach((item) => {
+          item.checked = item.cell === singleCellKey;
+        });
+        renderAutomationSlide();
+      }
+
+      const payload = {};
+      const activeLabels = [];
+      checkboxes.forEach((item) => {
+        payload[item.cell] = item.checked;
+        if (item.checked) activeLabels.push(`${item.cell} (${item.label})`);
+      });
+
+      const sendBtn = document.getElementById('sendCheckboxesToSheetBtn');
+      const origHtml = sendBtn ? sendBtn.innerHTML : '';
+      if (sendBtn) {
+        sendBtn.disabled = true;
+        sendBtn.innerHTML = `<span>Mengirim...</span>`;
+      }
+
+      const summaryLabels = activeLabels.length > 0 ? activeLabels.join(', ') : 'Semua Unchecked (FALSE)';
+
+      if (!currentWebhookUrl) {
+        prependAutomationLog(
+          channelKey,
+          singleCellKey ? `Trigger ${singleCellKey} (${chCfg.name})` : `Kirim Checkbox E5:E8 (${chCfg.name})`,
+          `ℹ️ Status lokal ${chCfg.sheetLabel} diperbarui: ${summaryLabels}. Hubungkan Setup Webhook Apps Script untuk menulis langsung ke Google Sheets.`
+        );
+        renderAutomationSlide();
+        showToast(`Checkbox ${chCfg.name} diperbarui • Atur Webhook agar terkirim ke Sheet`);
+        const wm = document.getElementById('webhookModal');
+        if (wm && !singleCellKey) {
+          document.getElementById('webhookModalSubtitle').textContent = `${chCfg.sheetLabel} • Tab Logs (Sel E5:F8)`;
+          document.getElementById('webhookModalSheetTag').textContent = chCfg.sheetLabel;
+          document.getElementById('webhookUrlInput').value = currentWebhookUrl;
+          wm.classList.remove('hidden');
+          wm.classList.add('flex');
+        }
+        if (sendBtn) {
+          sendBtn.disabled = false;
+          sendBtn.innerHTML = origHtml;
+        }
+        return;
+      }
+
+      try {
+        const query = new URLSearchParams(
+          Object.fromEntries(Object.entries(payload).map(([k, v]) => [k, String(v)]))
+        ).toString();
+        const targetUrl = currentWebhookUrl.includes('?') ? `${currentWebhookUrl}&${query}` : `${currentWebhookUrl}?${query}`;
+
+        await fetch(targetUrl, {
+          method: 'POST',
+          mode: 'no-cors',
+          headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+          body: JSON.stringify(payload)
+        });
+
+        prependAutomationLog(
+          channelKey,
+          singleCellKey ? `Eksekusi ${singleCellKey} (${chCfg.name})` : `Kirim Checkbox E5:E8 (${chCfg.name})`,
+          `✅ Terkirim ke spreadsheet ${chCfg.sheetLabel}: ${summaryLabels}`
+        );
+        renderAutomationSlide();
+        showToast(`Centang terkirim ke ${chCfg.name} (${summaryLabels})`);
+
+        setTimeout(() => syncLiveSheet(false), 2000);
+      } catch (_err) {
+        showToast(`Gagal menghubungi Webhook ${chCfg.name}`);
+      } finally {
+        if (sendBtn) {
+          sendBtn.disabled = false;
+          sendBtn.innerHTML = origHtml;
+        }
+      }
+    }
+
+    function renderAutomationSlide() {
+      const grid = document.getElementById('automationCheckboxesGrid');
+      const logsContainer = document.getElementById('automationLogsListContainer');
+      const countBadge = document.getElementById('automationLogCountBadge');
+      const webhookBadge = document.getElementById('webhookConnectionBadge');
+      const webhookDot = document.getElementById('webhookStatusDot');
+
+      if (!grid || !logsContainer) return;
+
+      const chCfg = AUTOMATION_CHANNELS[activeAutomationChannel] || AUTOMATION_CHANNELS.ceria;
+      const checkboxes = automationCheckboxesByChannel[activeAutomationChannel];
+      const currentLogs = automationLogsByChannel[activeAutomationChannel] || [];
+      const currentWebhookUrl = webhookUrlsByChannel[activeAutomationChannel] || '';
+
+      const sheetBadge = document.getElementById('automationSheetBadge');
+      const sheetLink = document.getElementById('openAutomationSheetLink');
+      const sheetCaption = document.getElementById('automationActiveSheetCaption');
+      if (sheetBadge) sheetBadge.textContent = `${chCfg.sheetLabel} • Tab Logs`;
+      if (sheetLink) sheetLink.href = chCfg.sheetUrl;
+      if (sheetCaption) sheetCaption.textContent = `Spreadsheet: ${chCfg.sheetLabel} • Sel Checkbox E5:F8`;
+
+      document.getElementById('badgeAutoLogsCeria').textContent = (automationLogsByChannel.ceria || []).length;
+      document.getElementById('badgeAutoLogsPinky').textContent = (automationLogsByChannel.pinkymon || []).length;
+
+      document.querySelectorAll('.auto-channel-tab').forEach((btn) => {
+        const ch = btn.getAttribute('data-auto-channel');
+        const badgeSpan = btn.querySelector('span:last-child');
+        if (ch === activeAutomationChannel) {
+          btn.className = 'auto-channel-tab px-4 py-2 rounded-xl bg-[#0C0C0C] text-white text-xs font-extrabold flex items-center gap-2 transition';
+          if (badgeSpan) badgeSpan.className = 'px-1.5 py-0.5 rounded-full bg-white/20 text-white text-[10px] font-black';
+        } else {
+          btn.className = 'auto-channel-tab px-4 py-2 rounded-xl text-[#4B5563] hover:text-[#0C0C0C] text-xs font-bold flex items-center gap-2 transition';
+          if (badgeSpan) badgeSpan.className = 'px-1.5 py-0.5 rounded-full bg-[#E5E7EB] text-[#0C0C0C] text-[10px] font-black';
+        }
+      });
+
+      if (currentWebhookUrl) {
+        if (webhookBadge) {
+          webhookBadge.textContent = `Webhook ${chCfg.name} Aktif`;
+          webhookBadge.className = 'px-2.5 py-0.5 rounded-full bg-[#0C0C0C] text-white text-[10px] font-bold';
+        }
+        if (webhookDot) webhookDot.className = 'w-2 h-2 rounded-full bg-emerald-400';
+      } else {
+        if (webhookBadge) {
+          webhookBadge.textContent = 'Belum Set Webhook';
+          webhookBadge.className = 'px-2.5 py-0.5 rounded-full bg-white border border-[#D1D5DB] text-[10px] font-bold text-[#0C0C0C]';
+        }
+        if (webhookDot) webhookDot.className = 'w-2 h-2 rounded-full bg-amber-400';
+      }
+
+      grid.innerHTML = checkboxes
+        .map(
+          (item, idx) => `
+          <div
+            data-cb-idx="${idx}"
+            class="automation-cb-card rounded-[18px] bg-white p-3.5 border transition flex items-center justify-between gap-3 ${
+              item.checked ? 'border-[#0C0C0C] ring-1 ring-[#0C0C0C]' : 'border-[#E5E7EB] hover:border-[#9CA3AF]'
+            }"
+          >
+            <div class="flex items-start gap-3 min-w-0 cursor-pointer automation-cb-toggle" data-cb-idx="${idx}">
+              <div class="mt-0.5 w-6 h-6 rounded-lg border-2 flex items-center justify-center shrink-0 transition ${
+                item.checked ? 'bg-[#0C0C0C] border-[#0C0C0C] text-white' : 'bg-[#F5F6F8] border-[#9CA3AF] text-transparent'
+              }">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.8" d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <div class="min-w-0">
+                <div class="flex flex-wrap items-center gap-1.5">
+                  <span class="text-xs sm:text-sm font-extrabold text-[#0C0C0C]">${item.label}</span>
+                  <span class="px-2 py-0.5 rounded-md bg-[#F5F6F8] text-[10px] font-bold text-[#4B5563]">Sel ${item.cell}</span>
+                  <span class="px-2 py-0.5 rounded-md text-[9px] font-extrabold ${
+                    item.checked ? 'bg-[#0C0C0C] text-white' : 'bg-[#F5F6F8] text-[#9CA3AF]'
+                  }">${item.checked ? 'TRUE' : 'FALSE'}</span>
+                </div>
+                <p class="text-[11px] font-medium text-[#6B7280] mt-0.5 truncate">${item.desc}</p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              data-quick-cell="${item.cell}"
+              class="quick-send-cell-btn px-3 py-1.5 rounded-full bg-[#F5F6F8] hover:bg-[#0C0C0C] text-[#0C0C0C] hover:text-white text-[11px] font-bold shrink-0 transition"
+            >
+              Centang &amp; Kirim
+            </button>
+          </div>
+        `
+        )
+        .join('');
+
+      grid.querySelectorAll('.automation-cb-toggle').forEach((el) => {
+        el.addEventListener('click', () => {
+          const i = parseInt(el.getAttribute('data-cb-idx'), 10);
+          checkboxes[i].checked = !checkboxes[i].checked;
+          renderAutomationSlide();
+        });
+      });
+
+      grid.querySelectorAll('.quick-send-cell-btn').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const cell = btn.getAttribute('data-quick-cell');
+          sendCheckboxesToSpreadsheet(cell);
+        });
+      });
+
+      renderMasterControlFields();
+
+      const q = logSearchQuery.trim().toLowerCase();
+      const filteredLogs = currentLogs.filter((log) => {
+        const actLow = log.aktivitas.toLowerCase();
+        if (activeLogFilter === 'cek' && !actLow.includes('cek slot')) return false;
+        if (activeLogFilter === 'tarik' && !actLow.includes('tarik video')) return false;
+        if (
+          activeLogFilter === 'jadwal' &&
+          !actLow.includes('jadwal') &&
+          !actLow.includes('update') &&
+          !actLow.includes('trigger') &&
+          !actLow.includes('eksekusi')
+        ) {
+          return false;
+        }
+        if (!q) return true;
+        return `${log.waktu} ${log.aktivitas} ${log.detail}`.toLowerCase().includes(q);
+      });
+
+      if (countBadge) countBadge.textContent = `${filteredLogs.length} log`;
+
+      if (filteredLogs.length === 0) {
+        logsContainer.innerHTML = `
+          <div class="rounded-2xl soft-card p-6 text-center text-xs text-[#6B7280]">
+            Tidak ada data log pada ${chCfg.name} yang cocok atau semua log sudah dihapus.
+          </div>
+        `;
+        return;
+      }
+
+      logsContainer.innerHTML = filteredLogs
+        .map(
+          (log, idx) => `
+          <div class="rounded-[18px] soft-card px-4 py-3.5 flex items-start justify-between gap-3">
+            <div class="flex items-start gap-3 min-w-0">
+              <div class="w-8 h-8 rounded-xl bg-white flex items-center justify-center font-black text-[11px] text-[#0C0C0C] shrink-0 shadow-2xs">
+                ${idx === 0 ? 'NEW' : idx + 1}
+              </div>
+              <div class="min-w-0 space-y-1">
+                <div class="flex flex-wrap items-center gap-2">
+                  <span class="px-2.5 py-0.5 rounded-full bg-[#0C0C0C] text-white text-[10px] font-bold">${log.aktivitas}</span>
+                  <span class="text-[11px] font-semibold text-[#6B7280]">${log.waktu} WIB</span>
+                </div>
+                <p class="text-xs font-semibold text-[#0C0C0C] leading-relaxed break-words">${log.detail}</p>
+              </div>
+            </div>
+
+            <button
+              type="button"
+              data-delete-log-id="${log.id}"
+              title="Hapus log ini"
+              class="delete-single-log-btn w-8 h-8 rounded-xl bg-white hover:bg-[#0C0C0C] text-[#6B7280] hover:text-white border border-[#E5E7EB] flex items-center justify-center shrink-0 transition"
+            >
+              <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>
+          </div>
+        `
+        )
+        .join('');
+
+      logsContainer.querySelectorAll('.delete-single-log-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          const targetId = btn.getAttribute('data-delete-log-id');
+          deleteAutomationLog(targetId);
+        });
+      });
+
+      logsContainer.scrollTop = 0;
+    }
+
+    // =========================================================================
+    // 7. MASTER RENDER & INITIALIZATION
+    // =========================================================================
+    function renderDashboard(autoScrollBottom = true) {
+      const stats = calculateStats();
+      document.getElementById('kpiTotalBulan').textContent = formatMoney(stats.totalBulan);
+      document.getElementById('kpiEstAkhir').textContent = formatMoney(stats.estAkhir);
+      document.getElementById('notifCountBadge').textContent = revenueData.length;
+      document.getElementById('currencySymbolText').textContent = currencyMode === 'USD' ? '$' : 'Rp';
+
+      renderHeroAndLatestStrip();
+      renderEditorialWaveChart();
+      renderChannelSplit(stats);
+      renderDailyList(autoScrollBottom);
+      renderAdsenseCalendar();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderDashboard(true);
+      renderScheduleSlide();
+      renderAutomationSlide();
+      syncLiveSheet(false);
+      restartAutoSyncTimer();
+
+      // Left Rail Navigation
+      document.querySelectorAll('.rail-nav-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('.rail-nav-btn').forEach((b) => {
+            b.className = 'rail-nav-btn relative w-10 h-10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 flex items-center justify-center transition';
+          });
+          btn.className = 'rail-nav-btn relative w-10 h-10 rounded-xl bg-white/15 text-white flex items-center justify-center transition';
+
+          const nav = btn.getAttribute('data-nav');
+          if (nav === 'schedule') {
+            switchSlide('schedule');
+          } else if (nav === 'automation') {
+            switchSlide('automation');
+          } else {
+            switchSlide('revenue');
+            if (nav === 'adsense') {
+              document.getElementById('adsenseCalendarCard').scrollIntoView({ behavior: 'smooth' });
+            } else if (nav === 'daily') {
+              document.getElementById('dailyRevenueSection').scrollIntoView({ behavior: 'smooth' });
+            } else {
+              document.getElementById('leftColumnSection').scrollIntoView({ behavior: 'smooth' });
+            }
+          }
+        });
+      });
+
+      // Back to Main Revenue Slide Buttons
+      const activateOverviewRailAndSlide = () => {
+        document.querySelectorAll('.rail-nav-btn').forEach((b) => {
+          b.className = 'rail-nav-btn relative w-10 h-10 rounded-xl text-white/60 hover:text-white hover:bg-white/10 flex items-center justify-center transition';
+        });
+        const homeBtn = document.querySelector('.rail-nav-btn[data-nav="overview"]');
+        if (homeBtn) {
+          homeBtn.className = 'rail-nav-btn relative w-10 h-10 rounded-xl bg-white/15 text-white flex items-center justify-center transition';
+        }
+        switchSlide('revenue');
+      };
+
+      document.getElementById('backToRevenueBtn').addEventListener('click', activateOverviewRailAndSlide);
+      document.getElementById('backFromAutomationBtn').addEventListener('click', activateOverviewRailAndSlide);
+
+      // Prev / Next Day Strip Buttons
+      document.getElementById('prevSelectedDayBtn').addEventListener('click', () => {
+        if (selectedDayIndex > 0) {
+          selectedDayIndex--;
+          renderHeroAndLatestStrip();
+          renderDailyList(false);
+        }
+      });
+      document.getElementById('nextSelectedDayBtn').addEventListener('click', () => {
+        if (selectedDayIndex < revenueData.length - 1) {
+          selectedDayIndex++;
+          renderHeroAndLatestStrip();
+          renderDailyList(false);
+        }
+      });
+
+      // Slide 3: Channel Switcher, Checkbox Send, Filter, Search, Delete & Webhook Modal Controls
+      document.querySelectorAll('.auto-channel-tab').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          activeAutomationChannel = btn.getAttribute('data-auto-channel');
+          confirmClearLogsArmed = false;
+          const clearBtn = document.getElementById('clearAutomationLogsBtn');
+          const clearLabel = document.getElementById('clearAutomationLogsBtnLabel');
+          if (clearBtn) clearBtn.className = 'px-3.5 py-2 rounded-full bg-[#0C0C0C] hover:bg-neutral-800 text-white text-xs font-bold flex items-center gap-1.5 shrink-0 transition';
+          if (clearLabel) clearLabel.textContent = 'Hapus Logs';
+          renderAutomationSlide();
+        });
+      });
+
+      document.getElementById('sendCheckboxesToSheetBtn').addEventListener('click', () => {
+        sendCheckboxesToSpreadsheet(null);
+      });
+
+      document.getElementById('saveAllMasterControlBtn').addEventListener('click', () => {
+        clearTimeout(masterControlSaveTimer);
+        saveMasterControlToSpreadsheet(null, false);
+      });
+
+      document.getElementById('clearAutomationLogsBtn').addEventListener('click', () => {
+        clearAllAutomationLogs();
+      });
+
+      document.querySelectorAll('.log-filter-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          activeLogFilter = btn.getAttribute('data-log-filter');
+          document.querySelectorAll('.log-filter-btn').forEach((b) => {
+            b.className = 'log-filter-btn font-semibold text-[#9CA3AF] hover:text-[#0C0C0C] whitespace-nowrap transition';
+          });
+          btn.className = 'log-filter-btn font-bold text-[#0C0C0C] whitespace-nowrap transition';
+          renderAutomationSlide();
+        });
+      });
+
+      document.getElementById('logSearchInput').addEventListener('input', (e) => {
+        logSearchQuery = e.target.value;
+        renderAutomationSlide();
+      });
+
+      document.getElementById('copyAutomationLogsBtn').addEventListener('click', () => {
+        const chCfg = AUTOMATION_CHANNELS[activeAutomationChannel];
+        const logs = automationLogsByChannel[activeAutomationChannel] || [];
+        const text = [
+          `Data Logs Penjadwalan Video (${chCfg.sheetLabel} — Tab Logs)`,
+          ...logs.map((l) => `[${l.waktu} WIB] ${l.aktivitas}: ${l.detail}`)
+        ].join('\n');
+
+        const tempArea = document.createElement('textarea');
+        tempArea.value = text;
+        document.body.appendChild(tempArea);
+        tempArea.select();
+        try {
+          document.execCommand('copy');
+          showToast(`Data logs ${chCfg.name} berhasil disalin`);
+        } catch (_e) {
+          showToast('Gagal menyalin logs');
+        }
+        document.body.removeChild(tempArea);
+      });
+
+      const webhookModal = document.getElementById('webhookModal');
+      const closeWebhookModal = () => {
+        webhookModal.classList.add('hidden');
+        webhookModal.classList.remove('flex');
+      };
+
+      document.getElementById('openWebhookModalBtn').addEventListener('click', () => {
+        const chCfg = AUTOMATION_CHANNELS[activeAutomationChannel];
+        document.getElementById('webhookModalSubtitle').textContent = `${chCfg.sheetLabel} • Tab Logs (Sel E5:F8)`;
+        document.getElementById('webhookModalSheetTag').textContent = chCfg.sheetLabel;
+        document.getElementById('webhookUrlInput').value = webhookUrlsByChannel[activeAutomationChannel] || '';
+        webhookModal.classList.remove('hidden');
+        webhookModal.classList.add('flex');
+      });
+      document.getElementById('closeWebhookModalBtn').addEventListener('click', closeWebhookModal);
+
+      document.getElementById('copyAppsScriptCodeBtn').addEventListener('click', () => {
+        const chCfg = AUTOMATION_CHANNELS[activeAutomationChannel];
+        const tempArea = document.createElement('textarea');
+        tempArea.value = getAppsScriptTemplateCode(activeAutomationChannel);
+        document.body.appendChild(tempArea);
+        tempArea.select();
+        try {
+          document.execCommand('copy');
+          showToast(`Kode Apps Script (${chCfg.sheetLabel}) berhasil disalin`);
+        } catch (_e) {
+          showToast('Gagal menyalin kode Apps Script');
+        }
+        document.body.removeChild(tempArea);
+      });
+
+      document.getElementById('saveWebhookUrlBtn').addEventListener('click', () => {
+        const chCfg = AUTOMATION_CHANNELS[activeAutomationChannel];
+        const val = document.getElementById('webhookUrlInput').value.trim();
+        webhookUrlsByChannel[activeAutomationChannel] = val;
+        localStorage.setItem(chCfg.webhookStorageKey, val);
+        closeWebhookModal();
+        renderAutomationSlide();
+        showToast(val ? `URL Webhook ${chCfg.name} tersimpan` : `URL Webhook ${chCfg.name} dikosongkan`);
+      });
+
+      document.getElementById('clearWebhookUrlBtn').addEventListener('click', () => {
+        const chCfg = AUTOMATION_CHANNELS[activeAutomationChannel];
+        webhookUrlsByChannel[activeAutomationChannel] = '';
+        localStorage.removeItem(chCfg.webhookStorageKey);
+        document.getElementById('webhookUrlInput').value = '';
+        renderAutomationSlide();
+        showToast(`URL Webhook ${chCfg.name} direset`);
+      });
+
+      // Slide 2: Channel Tabs ("Cer** Spa**" & "Pin*y**on")
+      document.querySelectorAll('.sched-channel-tab').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          activeScheduleChannel = btn.getAttribute('data-sched-channel');
+          renderScheduleSlide();
+        });
+      });
+
+      document.querySelectorAll('.sched-filter-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          activeScheduleFilter = btn.getAttribute('data-sched-filter');
+          document.querySelectorAll('.sched-filter-btn').forEach((b) => {
+            b.className = 'sched-filter-btn font-semibold text-[#9CA3AF] hover:text-[#0C0C0C] whitespace-nowrap transition';
+          });
+          btn.className = 'sched-filter-btn font-bold text-[#0C0C0C] whitespace-nowrap transition';
+          renderScheduleSlide();
+        });
+      });
+
+      document.getElementById('scheduleSearchInput').addEventListener('input', (e) => {
+        scheduleSearchQuery = e.target.value;
+        renderScheduleSlide();
+      });
+
+      document.getElementById('copyScheduleAuditBtn').addEventListener('click', () => {
+        const ceriaAudit = analyzeChannelSchedule('Cer** Spa**');
+        const pinkyAudit = analyzeChannelSchedule('Pin*y**on');
+
+        const formatChannelAudit = (name, audit) => {
+          if (audit.incompleteDays.length === 0) return `• ${name}: Semua hari lengkap 4 video.`;
+          const lines = audit.incompleteDays.map(
+            (d) => `  - ${d.hari}, ${d.tanggal}: ${d.count}/4 video (Kurang ${d.missingCount} slot: ${d.missingSlots.join(', ')})`
+          );
+          return `• ${name} (${audit.incompleteDays.length} hari belum lengkap):\n${lines.join('\n')}`;
+        };
+
+        const reportText = [
+          'Audit Jadwal Video YouTube (Target 4 Video/Hari)',
+          formatChannelAudit('Cer** Spa**', ceriaAudit),
+          formatChannelAudit('Pin*y**on', pinkyAudit)
+        ].join('\n\n');
+
+        const tempArea = document.createElement('textarea');
+        tempArea.value = reportText;
+        document.body.appendChild(tempArea);
+        tempArea.select();
+        try {
+          document.execCommand('copy');
+          showToast('Daftar hari kurang 4 video berhasil disalin');
+        } catch (_err) {
+          showToast('Gagal menyalin audit jadwal');
+        }
+        document.body.removeChild(tempArea);
+      });
+
+      // Slide 1: Revenue Search & Filter Tabs
+      document.getElementById('searchInput').addEventListener('input', (e) => {
+        searchQuery = e.target.value;
+        renderDailyList(false);
+      });
+
+      document.querySelectorAll('.tab-filter-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          activeFilter = btn.getAttribute('data-filter');
+          document.querySelectorAll('.tab-filter-btn').forEach((b) => {
+            b.className = 'tab-filter-btn font-semibold text-[#9CA3AF] hover:text-[#0C0C0C] whitespace-nowrap transition';
+          });
+          btn.className = 'tab-filter-btn font-bold text-[#0C0C0C] whitespace-nowrap transition';
+          renderDailyList(true);
+        });
+      });
+
+      // Statistics Sub-tabs ("Tren Harian" vs "Per Channel")
+      document.querySelectorAll('.stat-tab-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          activeStatTab = btn.getAttribute('data-stat-tab');
+          document.querySelectorAll('.stat-tab-btn').forEach((b) => {
+            b.className = 'stat-tab-btn font-semibold text-[#9CA3AF] hover:text-[#0C0C0C] transition';
+          });
+          btn.className = 'stat-tab-btn font-bold text-[#0C0C0C] transition';
+
+          if (activeStatTab === 'channels') {
+            document.getElementById('trendChartContainer').classList.add('hidden');
+            document.getElementById('channelSplitContainer').classList.remove('hidden');
+          } else {
+            document.getElementById('channelSplitContainer').classList.add('hidden');
+            document.getElementById('trendChartContainer').classList.remove('hidden');
+          }
+        });
+      });
+
+      // Currency Toggle ($ / Rp)
+      document.getElementById('currencyToggleBtn').addEventListener('click', () => {
+        currencyMode = currencyMode === 'USD' ? 'IDR' : 'USD';
+        renderDashboard(false);
+        showToast(`Mata uang diubah ke ${currencyMode}`);
+      });
+
+      // AdSense Calendar Navigation & Milestone Pills
+      document.getElementById('prevCalBtn').addEventListener('click', () => {
+        calMonth--;
+        if (calMonth < 0) {
+          calMonth = 11;
+          calYear--;
+        }
+        renderAdsenseCalendar();
+      });
+
+      document.getElementById('nextCalBtn').addEventListener('click', () => {
+        calMonth++;
+        if (calMonth > 11) {
+          calMonth = 0;
+          calYear++;
+        }
+        renderAdsenseCalendar();
+      });
+
+      document.querySelectorAll('.adsense-pill-btn').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          selectedCalendarDay = parseInt(btn.getAttribute('data-adsense-jump'), 10);
+          renderAdsenseCalendar();
+        });
+      });
+
+      // Copy Revenue Report
+      document.getElementById('copyReportBtn').addEventListener('click', () => {
+        const stats = calculateStats();
+        const latest = revenueData[revenueData.length - 1];
+        const summary = [
+          'Laporan Penghasilan YouTube (Sheet: Revenue)',
+          `• Total Bulan Ini (${stats.daysCount} hari): ${formatMoney(stats.totalBulan)}`,
+          `• Estimasi Akhir Bulan: ${formatMoney(stats.estAkhir)}`,
+          `• Ceria Space: ${formatMoney(stats.csTotal)} (${stats.csPct.toFixed(1)}%)`,
+          `• Pinkymon: ${formatMoney(stats.pkTotal)} (${stats.pkPct.toFixed(1)}%)`,
+          latest ? `• Hari Terakhir (${latest.tanggal}): ${formatMoney(latest.total)}` : ''
+        ].filter(Boolean).join('\n');
+
+        const tempArea = document.createElement('textarea');
+        tempArea.value = summary;
+        document.body.appendChild(tempArea);
+        tempArea.select();
+        try {
+          document.execCommand('copy');
+          showToast('Laporan penghasilan berhasil disalin');
+        } catch (_e) {
+          showToast('Gagal menyalin laporan');
+        }
+        document.body.removeChild(tempArea);
+      });
+
+      // Input Modal Controls
+      const addModal = document.getElementById('addModal');
+      const openAddModal = () => {
+        const nextNum = revenueData.length + 1;
+        document.getElementById('inputTanggal').value = `${nextNum}-Nov-2026`;
+        addModal.classList.remove('hidden');
+        addModal.classList.add('flex');
+      };
+      const closeAddModal = () => {
+        addModal.classList.add('hidden');
+        addModal.classList.remove('flex');
+      };
+
+      document.getElementById('railAddBtn').addEventListener('click', openAddModal);
+      document.getElementById('closeModalBtn').addEventListener('click', closeAddModal);
+      document.getElementById('cancelModalBtn').addEventListener('click', closeAddModal);
+
+      document.getElementById('addForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const tanggal = document.getElementById('inputTanggal').value.trim();
+        const pk = parseFloat(document.getElementById('inputPinkymon').value) || 0;
+        const cs = parseFloat(document.getElementById('inputCeria').value) || 0;
+        const tot = Number((pk + cs).toFixed(2));
+        revenueData.push({ tanggal, pinkymon: pk, ceria: cs, total: tot });
+        selectedDayIndex = revenueData.length - 1;
+        closeAddModal();
+        renderDashboard(true);
+        showToast(`Data ${tanggal} ditambahkan`);
+      });
+
+      // Sync Help Modal & Refresh Controls
+      const syncHelpModal = document.getElementById('syncHelpModal');
+      const openSyncModal = () => {
+        syncHelpModal.classList.remove('hidden');
+        syncHelpModal.classList.add('flex');
+      };
+      const closeSyncModal = () => {
+        syncHelpModal.classList.add('hidden');
+        syncHelpModal.classList.remove('flex');
+      };
+
+      document.getElementById('railSyncSettingsBtn').addEventListener('click', openSyncModal);
+      document.getElementById('syncBellBtn').addEventListener('click', openSyncModal);
+      document.getElementById('closeSyncHelpBtn').addEventListener('click', closeSyncModal);
+      document.getElementById('dismissSyncModalBtn').addEventListener('click', closeSyncModal);
+
+      document.getElementById('railRefreshBtn').addEventListener('click', () => syncLiveSheet(true));
+      document.getElementById('forceSyncFromModalBtn').addEventListener('click', () => {
+        syncLiveSheet(true);
+        closeSyncModal();
+      });
+
+      document.getElementById('autoSyncIntervalSelect').addEventListener('change', (e) => {
+        autoSyncMs = parseInt(e.target.value, 10);
+        restartAutoSyncTimer();
+        showToast(autoSyncMs > 0 ? `Auto-sync diatur setiap ${autoSyncMs / 60000} menit` : 'Auto-sync diatur ke manual');
+      });
+    });
+  </script>
+</body>
+</html>
